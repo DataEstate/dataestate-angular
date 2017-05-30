@@ -1,0 +1,101 @@
+.md-button.md-menu-link {
+	margin:0px;
+	text-align:left;
+	padding:0 16px;
+	width:100%;
+}
+.md-button.md-menu-link:hover {
+	cursor: pointer;
+}
+.md-button.md-menu-link .md-ripple-container{
+	border-radius: 0px;
+}
+.md-sublist {
+	padding-left: 0px;
+    margin: 0px;
+    overflow:hidden;
+}
+.md-sublist .md-sublist-item .md-button.md-menu-link {
+    padding: 0 16px 0 32px;
+    text-transform: none;
+}
+/**Animation**/
+.md-sublist {
+	transition: max-height 0.75s cubic-bezier(0.35, 0.05, 0.36, 1);
+	max-height:300px;
+}
+.md-sublist.ng-hide.ng-animate {
+	display:block!important;
+}
+.md-sublist.ng-hide {
+	max-height:0;
+}
+.menu-icon-toggle {
+	transition: transform 0.3s cubic-bezier(0.35, 0.05, 0.36, 1);
+}
+.menu-icon-toggle.md-menu-opened {
+	transform: rotate(-180deg);
+}
+/** MD Extend **/
+.md-button.md-action-button {
+    text-transform: none;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+.mde-button.mde-small {
+    padding: 0px;
+    min-width: 44px;
+    background: rgba(0,0,0,0.08);
+    margin: 0px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 0px;
+}
+.md-button[disabled].mde-button {
+	opacity: 0.5;
+}
+/** Tag List**/
+.tags {
+    display: inline-block;
+    background: rgb(0, 97, 161);
+    color: white;
+    margin: 1px;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.tags-container {
+	border:1px solid #eeeeee;
+}
+.tag-filter-container {
+	display:inline-block;
+}
+button.tags {
+	background:#bbb;
+	color:white;
+	border:none;
+}
+button.tags:hover,button.tags.active {
+	background:rgb(0, 97, 161);
+}
+.tags button.tags-delete {
+    background: rgba(0, 0, 0, 0.35);
+    border: none;
+    font-size: 12px;
+    height: 14px;
+    width: 14px;
+    color: white;
+    padding: 0px;
+    margin: 0px 0px 0px 4px;
+    line-height: 12px;
+    border-radius: 14px;
+}
+.tags-input {
+	display:inline-block;
+}
+.tags-input .tag-text{
+	display:inline-block;
+	border:none;
+}
+.tags-message {
+    font-style: italic;
+    color: #ef3f3d;
+}
