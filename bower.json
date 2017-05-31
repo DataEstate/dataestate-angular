@@ -1,26 +1,19 @@
 {
   "name": "data-estate-angular",
+  "homepage": "https://github.com/DataEstate/datae-state-angular",
   "authors": [
-    "Rolf Chen <rolf.chen@dataestate.com.au>"
+    "Rolf Chen<rolf@rolfchen.com>",
+    "Data Estate<support@dataestate.com.au>"
   ],
-  "description": "\"Angular 1.x's tool for developing with Data Estate API\"",
-  "main": "src/dataEstateModule.js",
+  "description": "AngularJS library for interacting with Data Estate API",
+  "main": "src/dataestateModule.js",
   "keywords": [
-    "DataEstate",
-    "API",
-    "Angular"
-  ],
-  "license": "MIT",
-  "homepage": "http://www.dataestate.com.au",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
+    "dataestate",
+    "angular",
+    "rest"
   ],
   "dependencies":{
-    "angular": ">=1.4.0"
-  }
+    "angular":"latest"
+  },
+  "license": "MIT"
 }
