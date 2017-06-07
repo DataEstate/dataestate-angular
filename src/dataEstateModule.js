@@ -1104,18 +1104,24 @@ de.factory('DeChangeRegister', function(DeHelper) {
 	var originals={};
 	var newData={};
 	var trackedScopes={};
+	function startTracking(setName, dataId, trackData) {
+		if (setName !==undefined && dataId !==undefined && trackData !==undefined) {
+			if (originals[setName]===undefined) {
+				originals[setName]={};
+			}
+			if (newData[setName]===undefined) {
+				newData[setName]={};
+			}
+			originals[setName][dataId]=angular.copy(trackData);
+			newData[setName][dataId]=trackData;
+			return true;
+		}
+	}
 	return {
-		//This will override original data. 
+		//This will override original data.
 		registerTracking:function(setName, dataId, trackData, trackScope) {
 			if (setName !==undefined && dataId !==undefined && trackData !==undefined) {
-				if (originals[setName]===undefined) {
-					originals[setName]={};
-				}
-				if (newData[setName]===undefined) {
-					newData[setName]={};
-				}
-				originals[setName][dataId]=angular.copy(trackData);
-				newData[setName][dataId]=trackData;
+				startTracking(setName, dataId, trackData, trackScope);
 				if (trackScope !==undefined) {
 					if (trackedScopes[setName]===undefined) {
 						trackedScopes[setName]={};
@@ -1134,7 +1140,7 @@ de.factory('DeChangeRegister', function(DeHelper) {
 					if (dataId!==undefined && newData[setName][dataId]!==undefined) {
 						originals[setName][dataId]=angular.copy(newData[setName][dataId]);
 						if (trackedScopes[setName]!==undefined && trackedScopes[setName][dataId]!==undefined) {
-							console.log(trackedScopes[setName][dataId].DeChangeReset);
+							//console.log(trackedScopes[setName][dataId].DeChangeReset);
 							if (typeof trackedScopes[setName][dataId].DeChangeReset==='function') {
 								trackedScopes[setName][dataId].DeChangeReset();
 							};
@@ -1156,8 +1162,9 @@ de.factory('DeChangeRegister', function(DeHelper) {
 				}
 			}
 		},
-		//Return true if there're changes, false if none.  
-		trackChanges:function(setName, dataId, compareData) {
+		resetTracking:startTracking,
+		//Return true if there're changes, false if none.
+		trackChanges:function(setName, dataId, compareData) {console.log(setName);
 			if (originals[setName] !==undefined && originals[setName][dataId]!==undefined) {
 				var changes=DeHelper.getDiff(originals[setName][dataId],compareData,true);
 				// console.log(compareData);
@@ -1177,7 +1184,7 @@ de.factory('DeChangeRegister', function(DeHelper) {
 					return false;
 				}
 			}
-		}, 
+		},
 		getChanges:function(setName, dataId) {
 			if (setName!==undefined) {
 				if (changeSets[setName]!==undefined) {
@@ -1195,7 +1202,7 @@ de.factory('DeChangeRegister', function(DeHelper) {
 			else {
 				return null;
 			}
-		}, 
+		},
 		getOriginals:function(setName, dataId) {
 			if (setName !==undefined && originals[setName]!==undefined) {
 				if (dataId!==undefined && originals[setName][dataId]!==undefined) {
@@ -1208,7 +1215,7 @@ de.factory('DeChangeRegister', function(DeHelper) {
 			else {
 				return originals;
 			}
-		}, 
+		},
 		hasChanged:function(setName, dataId) {
 			var itHas=true;
 			if (setName!==undefined) {
