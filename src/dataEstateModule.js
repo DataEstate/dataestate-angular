@@ -1,4 +1,4 @@
-//Version 0.4.0 Removed incompleted code and moved mdeMenu
+//Version 0.4.3 taxonomy editing
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
@@ -8,7 +8,7 @@ de.provider('DeApi', function() {
 	this.apiKey="";
 	this.authType="api-key"; //Default v0.1.4
 	this.oauthData={};
-	//Configurations. 
+	//Configurations.
 	this.setApi=function(api_url) {
 		this.apiUrl=api_url;
 	}
@@ -82,7 +82,7 @@ de.provider('DeApi', function() {
 					rh["Authorization"]="Bearer "+this.oauthData.token;
 				}
 				return $http({
-					url:this.apiUrl+endpoints, 
+					url:this.apiUrl+endpoints,
 					method:"POST",
 					data:data,
 					headers:rh
@@ -117,7 +117,7 @@ de.factory('DeEstates', function(DeApi) {
 			}
 			var endpoints="/estates/data/"+id;
 			return DeApi.get(endpoints, params);
-		}, 
+		},
 		update: function(id, data, language, remove_data, add_data) {
 			var endpoints="/estates/data/"+id;
 			var putData={
@@ -140,14 +140,14 @@ de.factory('DeEstates', function(DeApi) {
 				"data":data
 			}
 			return DeApi.post(endpoints, postData);
-		}, 
+		},
 		remove: function(id) {
 			var endpoints="/estates/data/"+id;
 			return DeApi.delete(endpoints, postData);
 		}
 	}
 });
-// v0.1.6: assets added categories as dictionary. 
+// v0.1.6: assets added categories as dictionary.
 de.factory('DeAssets', function(DeApi) {
 	var currentEstate="";
 	return {
@@ -182,7 +182,7 @@ de.factory('DeAssets', function(DeApi) {
 			if (language !==undefined) {
 				putData.language=language;
 			}
-			if (remove_data !==undefined && remove_data !==null) {
+			if (remove_data !==undefined && remove_data !==null && Object.keys(remove_data).length > 0) {
 				putData.remove=remove_data;
 			}
 			if (add_data !==undefined && add_data !== null) {
@@ -199,11 +199,11 @@ de.factory('DeAssets', function(DeApi) {
 				estate=currentEstate;
 			}
 			var postData={
-				"data":data, 
+				"data":data,
 				"estate_id":estate
 			}
 			return DeApi.post(endpoints, postData);
-		}, 
+		},
 		remove: function(id) {
 			var endpoints="/assets/data/"+id;
 			return DeApi.delete(endpoints);
@@ -235,7 +235,7 @@ de.factory('DeUsers', function(DeApi, $q) {
 		}
 	}
 })
-// v0.1.2: taxonomy - TODO: Get from API. 
+// v0.1.2: taxonomy - TODO: Get from API.
 de.factory('DeTaxonomy', function(DeApi) {
 	var subtypes=[
 	    {
@@ -332,15 +332,15 @@ de.factory('DeTaxonomy', function(DeApi) {
 			"id" : "BNELETTER",
 			"name":"Brisbane Letters",
 			"loc":[
-				-27.474147, 
+				-27.474147,
 				153.020482
 			]
 		},
 		{
 	        "id" : "QC",
 	        "name" : "Queensland Conservatorium",
-	        "loc" : [ 
-	            -27.4768193, 
+	        "loc" : [
+	            -27.4768193,
 	            153.0208075
 	        ]
 	    },
@@ -352,8 +352,8 @@ de.factory('DeTaxonomy', function(DeApi) {
 	    	]
 	    },
 	    {
-	        "loc" : [ 
-	            -27.4706487, 
+	        "loc" : [
+	            -27.4706487,
 	            153.0170457
 	        ],
 	        "id" : "GOMA",
@@ -362,38 +362,38 @@ de.factory('DeTaxonomy', function(DeApi) {
 	    {
 	        "id" : "CF",
 	        "name" : "Cultural Forecourt",
-	        "loc" : [ 
-	            -27.4739896, 
+	        "loc" : [
+	            -27.4739896,
 	            153.0203686
 	        ]
 	    },
 	    {
-	        "loc" : [ 
-	            -27.4748418, 
+	        "loc" : [
+	            -27.4748418,
 	            153.0212796
 	        ],
 	        "id" : "RB",
 	        "name" : "Riverbank"
 	    },
 	    {
-	        "loc" : [ 
-	            -27.476474, 
+	        "loc" : [
+	            -27.476474,
 	            153.021173
 	        ],
 	        "name" : "Lumbini Garden",
 	        "id" : "LG"
 	    },
 	    {
-	        "loc" : [ 
-	            -27.4771943, 
+	        "loc" : [
+	            -27.4771943,
 	            153.0217732
 	        ],
 	        "id" : "NB",
 	        "name" : "No Boundaries"
 	    },
 	    {
-	        "loc" : [ 
-	            -27.476186, 
+	        "loc" : [
+	            -27.476186,
 	            153.021666
 	        ],
 	        "name" : "Rainforest Green",
@@ -402,15 +402,15 @@ de.factory('DeTaxonomy', function(DeApi) {
 	    {
 	        "id" : "CMP",
 	        "name" : "The South Bank Piazza",
-	        "loc" : [ 
-	            -27.4769716, 
+	        "loc" : [
+	            -27.4769716,
 	            153.0214888
 	        ]
 	    },
 	    {
 	        "id" : "PAS",
-	        "loc" : [ 
-	            -27.474771, 
+	        "loc" : [
+	            -27.474771,
 	            153.0209563
 	        ],
 	        "name" : "Performing Arts Stage"
@@ -426,8 +426,8 @@ de.factory('DeTaxonomy', function(DeApi) {
 		"GROUP":"Group",
 		"HIRE":"Hire",
 		"INFO":"Information Services",
-		"JOURNEY":"Journey", 
-		"ORG":"Organisation", 
+		"JOURNEY":"Journey",
+		"ORG":"Organisation",
 		"RESTAURANT":"Food and Drink",
 		"TOUR":"Tour",
 		"TRANSPORT":"Transport"
@@ -438,7 +438,7 @@ de.factory('DeTaxonomy', function(DeApi) {
 	return {
 		subtypes: function() {
 			return subtypes;
-		}, 
+		},
 		locations: function() {
 			return locations;
 		},
@@ -517,7 +517,7 @@ de.factory('DeMultimedia', function(DeApi, $http) {
 			return DeApi.put(endpoints, putData);
 		},
 		upload: function(estate, file, uploadEventHandlers, meta) {
-			//Construct file. 
+			//Construct file.
 			var endpoints="/multimedia/"+estate;
 			var fd = new FormData();
 			fd.append("file", file, file.name);
@@ -548,7 +548,7 @@ de.factory('DeMultimedia', function(DeApi, $http) {
 				httpRequest.uploadEventHandlers=uploadEventHandlers;
 			}
 			return $http(httpRequest);
-		}, 
+		},
 		remove: function(estate, id) {
 			var endpoints="/multimedia/"+estate+"/"+id;
 			return DeApi.delete(endpoints);
@@ -840,7 +840,7 @@ de.factory('DeHelper', function() {
 				return changed;
 			}
 		},
-		isEmpty: isEmpty, 
+		isEmpty: isEmpty,
 		model: { //0.2.5
 			addItem:addItem,
 			copyItem:copyItem,
@@ -856,7 +856,7 @@ de.provider('DeIcons', function() {
 	this.setCategoryURL=function(catURL) {
 		this.categoryURL=catURL;
 	};
-	this.$get=function() {	
+	this.$get=function() {
 		this.categoryIcon=function(categoryString) {
 			if (categoryString !==undefined) {
 				return this.categoryURL+categoryString+".svg";
@@ -865,13 +865,21 @@ de.provider('DeIcons', function() {
 		return this;
 	}
 });
+//DIRECTIVES
+/**
+* deLink:
+*  de-link=''
+*  de-link-action='' (optional)
+* Used to parse Data Estate Link objects. If object type is api or internal, then
+* the de-link-action attribute is used to identify what function to call.
+*/
 //DE-LINK FORMAT CHANGED! Won't work with md-button
 de.directive('deLink', function() {
 	return {
 		scope: {
 			deLink:'=?deLink',
 			apiAction:'&?deApiAction',
-			internalAction:'&?deInternalAction', 
+			internalAction:'&?deInternalAction',
 			linkOptions:'=?deLinkOptions'
 		},
 		transclude:'element',
@@ -883,8 +891,8 @@ de.directive('deLink', function() {
 					element.on('click', function() {
 						scope.apiAction(
 							{
-								"$elem":element, 
-								"endpoints":scope.deLink.endpoints, 
+								"$elem":element,
+								"endpoints":scope.deLink.endpoints,
 								"params":scope.deLink.params
 							});
 					});
@@ -940,7 +948,7 @@ de.directive('deJson', function($parse) {
 });
 de.directive('deDateModel', function() {
 	return {
-		restrict:'A', 
+		restrict:'A',
 		scope: {
 			dateObj:"=deDateModel"
 		},
@@ -1026,14 +1034,14 @@ de.directive('jqAutocomplete', function() {
 		scope: {
 			source:"=jqAutoSource",
 			onCreate:"&?jqOnCreate",
-			onSelect:"&?jqOnSelect", 
-			onFocus:"&?jqOnFocus", 
-			jqShowfield:"=", 
+			onSelect:"&?jqOnSelect",
+			onFocus:"&?jqOnFocus",
+			jqShowfield:"=",
 			minLength:"=jqMinLength"
 		},
 		link: function(scope,element,attrs, modelCtrl) {
 			element.autocomplete({
-				minLength:(scope.minLength===undefined && !isNaN(scope.minLength)) ? 2:scope.minLength,
+				minLength:(scope.minLength===undefined || isNaN(scope.minLength)) ? 2:scope.minLength,
 				source:scope.source,
 				create:function(event, ui) {
 					if (scope.onCreate !==undefined) {
@@ -1044,7 +1052,7 @@ de.directive('jqAutocomplete', function() {
 					event.preventDefault();
 					element.val(ui.item ? ui.item.label : "");
 					//scope.onFocus({'$event':event, '$ui':ui});
-				}, 
+				},
 				select: function(event,ui) {
 					event.preventDefault();
 					modelCtrl.$setViewValue(ui.item.value);
@@ -1056,9 +1064,8 @@ de.directive('jqAutocomplete', function() {
 					}
 					if (scope.onSelect !==undefined && typeof scope.onSelect=="function") {
 						scope.onSelect({'$event':event, '$ui':ui});
-						element.val("");
 					}
-				}, 
+				},
 				change: function(event, ui) {
 					event.preventDefault();
 					if (ui.item===null) {
@@ -1164,7 +1171,7 @@ de.factory('DeChangeRegister', function(DeHelper) {
 		},
 		resetTracking:startTracking,
 		//Return true if there're changes, false if none.
-		trackChanges:function(setName, dataId, compareData) {console.log(setName);
+		trackChanges:function(setName, dataId, compareData) {
 			if (originals[setName] !==undefined && originals[setName][dataId]!==undefined) {
 				var changes=DeHelper.getDiff(originals[setName][dataId],compareData,true);
 				// console.log(compareData);
@@ -1239,8 +1246,8 @@ de.factory('DeChangeRegister', function(DeHelper) {
 de.directive('deTrackChanges', function(DeChangeRegister) {
 	return {
 		scope: {
-			trackModel:"=deTrackChanges", 
-			trackName:"=deTrackName", 
+			trackModel:"=deTrackChanges",
+			trackName:"=deTrackName",
 			trackId:"=?deTrackId"
 		},
 		link:function(scope, elem, attrs) {
@@ -1339,6 +1346,5 @@ de.filter('filterId', function() {
 			}
 		}
 		return "";
-	}		
+	}
 });
-
