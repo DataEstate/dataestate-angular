@@ -105,6 +105,24 @@ de.provider('DeApi', function() {
 				});
 			}
 		}
+		//Must follow RFC6902 structure
+		this.patch=function(endpoints, pipeline) {
+			if (endpoints !==undefined) {
+				var rh={};
+				if (this.authType=="api-key") {
+					rh["API-KEY"]=this.apiKey
+				}
+				else if (this.authType=="token") {
+					rh["Authorization"]="Bearer "+this.oauthData.token;
+				}
+				return $http({
+					url:this.apiUrl+endpoints,
+					method:"PATCH",
+					data:pipeline,
+					headers:rh
+				});
+			}
+		} 
 		return this;
 	}
 });
@@ -207,6 +225,14 @@ de.factory('DeAssets', function(DeApi) {
 		remove: function(id) {
 			var endpoints="/assets/data/"+id;
 			return DeApi.delete(endpoints);
+		}, 
+		bulkRemove:function(estate, type, ids) {
+			var endpoints="/assets/data/"+estate;
+			var bulkPipeline=[];
+			for (var i in ids) {
+				bulkPipeline.push({"op":"remove", "path":type+"/"+ids[i]});
+			}
+			return DeApi.patch(endpoints, bulkPipeline);
 		}
 	}
 });

@@ -146,7 +146,8 @@ de.directive('deGallery', function() {
 						sizes:$scope.selectedImg.sizes,
 						path:$scope.selectedImg.path,
 						bytes:$scope.selectedImg.bytes,
-						update_date:$scope.selectedImg.update_date
+						update_date:$scope.selectedImg.update_date, 
+						author:$scope.selectedImg.author
 					};
 					if ($scope.selectedImg.hasOwnProperty('alt')) {
 						selectedImgData.alt=$scope.selectedImg.alt;
