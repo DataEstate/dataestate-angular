@@ -1,4 +1,4 @@
-//Version 0.4.3 taxonomy editing
+//Version 0.4.4 Added DeApi PATCH
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
