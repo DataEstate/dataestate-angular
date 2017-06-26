@@ -1,4 +1,4 @@
-//Version 0.4.4 Added DeApi PATCH
+//Version 0.4.5 Added DeApi PATCH
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
@@ -161,7 +161,7 @@ de.factory('DeEstates', function(DeApi) {
 		},
 		remove: function(id) {
 			var endpoints="/estates/data/"+id;
-			return DeApi.delete(endpoints, postData);
+			return DeApi.delete(endpoints);
 		}
 	}
 });
@@ -518,6 +518,18 @@ de.factory('DeTaxonomy', function(DeApi) {
 		}
 	}
 });
+// v0.4.5
+de.factory('DeLocations', function(DeApi) {
+	return {
+		data:function(params, id) {
+			if (id==undefined) {
+				id="";
+			}
+			var endpoints="/locations/data/"+id;
+			return DeApi.get(endpoints, params);
+		}
+	}
+});
 // v0.2.4: Multimedia Merge
 de.factory('DeMultimedia', function(DeApi, $http) {
 	var multimedia=[];
@@ -588,45 +600,50 @@ de.factory('DeMultimedia', function(DeApi, $http) {
 // v0.1.2: HELPER
 de.factory('DeHelper', function() {
 	function removeEmpty(jsonOriginal) {
-		var jsonData=JSON.parse(JSON.stringify(jsonOriginal));
-		if (!isEmpty(jsonData)) {
-			switch (getType(jsonData)) {
-				case "Array":
-					for (var k in jsonData) {
-						if (isEmpty(jsonData[k], true)) {
-							jsonData=jsonData.splice(k, 1);
-						}
-						else {
-							jsonData[k]=removeEmpty(jsonData[k]);
-							if (jsonData[k]==undefined || jsonData[k]===null) {
-								jsonData.splice(k, 1);
-							}
-						}
-					}
-					break;
-				case "Object":
-					for (var k in jsonData) {
-						if (isEmpty(jsonData[k], true)) {
-							delete jsonData[k];
-						}
-						else {
-							jsonData[k]=removeEmpty(jsonData[k]);
-							if (jsonData[k]==undefined || jsonData[k]===null) {
-								delete jsonData[k];
-							}
-						}
-					}
-					break;
-			}
-			if (isEmpty(jsonData)) {
-				return null;
-			}
-			else {
-				return jsonData;
-			}
+		if (jsonOriginal===undefined) {
+			return null;
 		}
 		else {
-			return null;
+			var jsonData=JSON.parse(JSON.stringify(jsonOriginal));
+			if (!isEmpty(jsonData)) {
+				switch (getType(jsonData)) {
+					case "Array":
+						for (var k in jsonData) {
+							if (isEmpty(jsonData[k], true)) {
+								jsonData=jsonData.splice(k, 1);
+							}
+							else {
+								jsonData[k]=removeEmpty(jsonData[k]);
+								if (jsonData[k]==undefined || jsonData[k]===null) {
+									jsonData.splice(k, 1);
+								}
+							}
+						}
+						break;
+					case "Object":
+						for (var k in jsonData) {
+							if (isEmpty(jsonData[k], true)) {
+								delete jsonData[k];
+							}
+							else {
+								jsonData[k]=removeEmpty(jsonData[k]);
+								if (jsonData[k]==undefined || jsonData[k]===null) {
+									delete jsonData[k];
+								}
+							}
+						}
+						break;
+				}
+				if (isEmpty(jsonData)) {
+					return null;
+				}
+				else {
+					return jsonData;
+				}
+			}
+			else {
+				return null;
+			}
 		}
 	}
 	function isEmpty(jsonObj, testString) {
