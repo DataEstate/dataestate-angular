@@ -1,4 +1,4 @@
-//Version 0.4.5 Added DeApi PATCH
+//Version 0.4.6 Added DeApi PATCH
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
@@ -1067,6 +1067,24 @@ de.directive('deTooltip', function($document) {
 				element.remove();
 			});
 			element.remove();
+		}
+	}
+});
+//v0.4.6 - require dataEstateUI.css
+de.directive('deImgCredit', function() {
+	return {
+		restrict:'A',
+		scope: {
+			creditText:'=?deImgCredit', 
+			customClass:'@?deCreditClass'
+		},
+		link: function(scope, element, attrs) {
+			if (scope.creditText!==undefined && scope.creditText !="") {
+				var styleClass='';
+				styleClass=scope.customClass ? ' '+scope.customClass:'';
+				var creditHtml='<div class="de-img-credit'+styleClass+'">'+scope.creditText+'</div>';
+				element.parent().append(creditHtml);
+			}
 		}
 	}
 });
