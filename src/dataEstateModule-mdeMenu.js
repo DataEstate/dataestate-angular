@@ -1,4 +1,4 @@
-//v0.3.4
+//v0.4.7
 de.directive('mdeMenuItem',function() {
 	return {
 		restrict:'E',

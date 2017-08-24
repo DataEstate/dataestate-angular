@@ -1,4 +1,4 @@
-//Version 0.4.6 Added DeApi PATCH
+//Version 0.4.7 Location update
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
