@@ -51,16 +51,16 @@ de.directive('mdeMenuItem',function() {
 			'<div flex layout="row"><span ng-bind="menuItem.title" flex></span>'+
 			'<md-icon md-font-set="md" flex="10" class="menu-icon-toggle" ng-class="{\'md-menu-opened\' : shouldShowMenu(menuItem.id)}">'+
 			'expand_more</md-icon></div></md-button>'+
-			'<md-button class="md-menu-link parent-menu-link" ng-if="!menuItem.submenu && menuItem.type!==\'api\'" ng-href="{{menuItem.link}}" arial-label="Menu links">'+
+			'<md-button class="md-menu-link parent-menu-link" ng-if="!menuItem.submenu && menuItem.type!==\'api\'" ng-class="{\'active\': isSelected(menuItem)}" ng-href="{{menuItem.link}}" arial-label="Menu links">'+
 			'<span ng-bind="menuItem.title"></span></md-button>'+
-			'<ul class="md-sublist" ng-show="shouldShowMenu(menuItem.id)" flex>'+
+			'<ul class="md-sublist" ng-show="shouldShowMenu(menuItem.id) && menuItem.submenu" flex>'+
 			'\n\t<li class="md-sublist-item"><md-button class="md-menu-link child-menu-link" ng-if="menuItem.link" ng-href="{{menuItem.link}}" aria-label="submenu link">'+
 			'<span ng-bind="menuItem.title"></span></md-button></li>'+
 			'\n\t<li class="md-sublist-item" ng-repeat="subItem in menuItem.submenu">'+
 			'<md-button class="md-menu-link child-menu-link" ng-if="subItem.type!=\'internal\'" ng-class="{\'active\': isSelected(subItem)}" ng-href="{{subItem.link}}" aria-label="submenu links">'+
 			'<span ng-bind="subItem.title"></span></md-button>'+
 			'<md-button class="md-menu-link child-menu-link" ng-if="subItem.type==\'internal\'" ng-click="setSubView(menuItem.link)" aria-label="subme nu links">'+
-			'<span ng-bind="subItem.title"></span></md-button></li>'+
+			'<span ng-bind="subItem.title" ></span></md-button></li>'+
 			'\n</ul>'
 		}
 	});

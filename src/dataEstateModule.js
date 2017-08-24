@@ -527,6 +527,22 @@ de.factory('DeLocations', function(DeApi) {
 			}
 			var endpoints="/locations/data/"+id;
 			return DeApi.get(endpoints, params);
+		}, //v0.4.7
+		update:function(id,data, language, remove_data, add_data) {
+			var endpoints="/locations/data/"+id;
+			var putData={
+				"data":data
+			};
+			if (language !==undefined && language !="english") {
+				putData.language=language;
+			}
+			if (remove_data !==undefined && remove_data !==null) {
+				putData.remove=remove_data;
+			}
+			if (add_data !==undefined && add_data !== null) {
+				putData.add=add_data;
+			}
+			return DeApi.put(endpoints, putData);
 		}
 	}
 });
