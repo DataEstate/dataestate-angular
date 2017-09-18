@@ -1,4 +1,4 @@
-//Version 0.4.7 Location update
+//Version 0.4.8 Collector
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
@@ -530,6 +530,44 @@ de.factory('DeLocations', function(DeApi) {
 		}, //v0.4.7
 		update:function(id,data, language, remove_data, add_data) {
 			var endpoints="/locations/data/"+id;
+			var putData={
+				"data":data
+			};
+			if (language !==undefined && language !="english") {
+				putData.language=language;
+			}
+			if (remove_data !==undefined && remove_data !==null) {
+				putData.remove=remove_data;
+			}
+			if (add_data !==undefined && add_data !== null) {
+				putData.add=add_data;
+			}
+			return DeApi.put(endpoints, putData);
+		}
+	}
+});
+// v0.4.8
+de.factory('DeCollectors', function(DeApi) {
+	return {
+		data:function(params, id) {
+			if (id==undefined) {
+				id="";
+			}
+			var endpoints="/collector/data/"+id;
+			return DeApi.get(endpoints, params);
+		},
+		create:function(data, estate_id) {
+			var endpoints="/collector/data/";
+			var postData={
+				"data":data
+			}
+			if (estate_id!==undefined) {
+				postData.estate_id=estate_id;
+			}
+			return DeApi.post(endpoints, postData);
+		}, 
+		update:function(id,data,language,remove_data,add_data) {
+			var endpoints="/collector/data/"+id;
 			var putData={
 				"data":data
 			};
