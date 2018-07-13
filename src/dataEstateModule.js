@@ -1,4 +1,4 @@
-//Version 0.4.8 Collector
+//Version 0.4.9 added "none" auth type
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.4);
@@ -19,9 +19,9 @@ de.provider('DeApi', function() {
 	this.setToken=function(auth_token) {
 		this.oauthData.token=auth_token;
 	}
-	//v0.1.4
+	//v0.4.9: added "none" for proxies
 	this.setAuthType=function(auth_type) {
-		var allowedTypes=["token", "api-key"];
+		var allowedTypes=["token", "api-key", "none"];
 		if (allowedTypes.indexOf(auth_type) >= 0) {
 			this.authType=auth_type;
 		}
@@ -61,9 +61,6 @@ de.provider('DeApi', function() {
 				else if (this.authType=="token") {
 					rh["Authorization"]="Bearer "+this.oauthData.token;
 				};
-				console.log(this.apiUrl+endpoints);
-				console.log(data);
-				console.log(rh);
 				return $http({
 					url:this.apiUrl+endpoints,
 					method:"PUT",
@@ -244,7 +241,6 @@ de.factory('DeUsers', function(DeApi, $q) {
 			var d=$q.defer();
 			var endpoints="/users/data/";
 			if (reload==true || currentUser===null) {
-				console.log("Getting user");
 				DeApi.get(endpoints).then(
 					function success(res) {
 						currentUser=res.data;
@@ -846,7 +842,6 @@ de.factory('DeHelper', function() {
 				if (Array.isArray(item)){
 					for (var i in array) {
 						for (var j in item) {
-							console.log("Comparing "+item[j]+" and "+array[i]);
 							if (item[j]==array[i]) {
 								return true;
 							}
@@ -857,7 +852,6 @@ de.factory('DeHelper', function() {
 					//var same=false;
 					for (var i in array) {
 						if (angular.equals(array[i], item)) {
-							//console.log(item.type);
 							return true;
 						}
 					}
@@ -867,7 +861,6 @@ de.factory('DeHelper', function() {
 					if (compare_key !== undefined) {
 						for (var i in array) {
 							if (array[i][compare_key]==item) {
-								//console.log("Found! "+array[i][compare_key]+", "+item);
 								return true;
 							}
 						}
@@ -983,7 +976,6 @@ de.directive('deLink', function() {
 		link: function(scope, element, attrs, mdb) {
 			var boundScope=scope.deLink;
 			if (scope.deLink.type !==undefined) {
-				console.log("Link type: "+scope.deLink.type);
 				if (scope.deLink.type=="api") {
 					element.on('click', function() {
 						scope.apiAction(
@@ -1054,23 +1046,15 @@ de.directive('deDateModel', function() {
 				if (typeof scope.dateObj=="string") {
 					var dateString=scope.dateObj.split("+")[0];
 					element.val(dateString);
-					console.log(dateString);
 				}
 				else {
-					console.log(scope.dateObj.getTimezoneOffset());
 					var jsString=scope.dateObj.toISOString().split("Z")[0];
-					console.log(jsString);
 					element.val(jsString);
 				}
 			}
 			element.on('change', function(ev) {
 				scope.$apply(function() {
-					console.log(element.val());
-					if (element.val()=="") {
-						console.log("Nothing yet...");
-					}
-					else {
-						//console.log(element.val());
+					if (element.val()!="") {
 						scope.dateObj=element.val();
 					}
 				})
@@ -1262,7 +1246,6 @@ de.factory('DeChangeRegister', function(DeHelper) {
 					if (dataId!==undefined && newData[setName][dataId]!==undefined) {
 						originals[setName][dataId]=angular.copy(newData[setName][dataId]);
 						if (trackedScopes[setName]!==undefined && trackedScopes[setName][dataId]!==undefined) {
-							//console.log(trackedScopes[setName][dataId].DeChangeReset);
 							if (typeof trackedScopes[setName][dataId].DeChangeReset==='function') {
 								trackedScopes[setName][dataId].DeChangeReset();
 							};
@@ -1289,8 +1272,6 @@ de.factory('DeChangeRegister', function(DeHelper) {
 		trackChanges:function(setName, dataId, compareData) {
 			if (originals[setName] !==undefined && originals[setName][dataId]!==undefined) {
 				var changes=DeHelper.getDiff(originals[setName][dataId],compareData,true);
-				// console.log(compareData);
-				// console.log(originals[setName][dataId]);
 				if (!DeHelper.isEmpty(changes.changed) || !DeHelper.isEmpty(changes.removed)) {
 				//if (!angular.equals(originals[setName][dataId], compareData)) {
 					if (changeSets[setName]===undefined) {
