@@ -1,7 +1,7 @@
-//Version 0.4.8 Collector
+//Version 0.5 new directives
 var de=angular.module("dataEstateModule", []);
 //CONSTANTS
-de.constant('VERSION', 0.4);
+de.constant('VERSION', 0.5);
  //Main Provider
 de.provider('DeApi', function() {
 	this.apiUrl="https://api.dataestate.net/v2"; //Default
@@ -19,9 +19,9 @@ de.provider('DeApi', function() {
 	this.setToken=function(auth_token) {
 		this.oauthData.token=auth_token;
 	}
-	//v0.1.4
+	//v0.4.9: added "none" for proxies
 	this.setAuthType=function(auth_type) {
-		var allowedTypes=["token", "api-key"];
+		var allowedTypes=["token", "api-key", "none"];
 		if (allowedTypes.indexOf(auth_type) >= 0) {
 			this.authType=auth_type;
 		}
@@ -61,9 +61,6 @@ de.provider('DeApi', function() {
 				else if (this.authType=="token") {
 					rh["Authorization"]="Bearer "+this.oauthData.token;
 				};
-				console.log(this.apiUrl+endpoints);
-				console.log(data);
-				console.log(rh);
 				return $http({
 					url:this.apiUrl+endpoints,
 					method:"PUT",
@@ -244,7 +241,6 @@ de.factory('DeUsers', function(DeApi, $q) {
 			var d=$q.defer();
 			var endpoints="/users/data/";
 			if (reload==true || currentUser===null) {
-				console.log("Getting user");
 				DeApi.get(endpoints).then(
 					function success(res) {
 						currentUser=res.data;
@@ -846,7 +842,6 @@ de.factory('DeHelper', function() {
 				if (Array.isArray(item)){
 					for (var i in array) {
 						for (var j in item) {
-							console.log("Comparing "+item[j]+" and "+array[i]);
 							if (item[j]==array[i]) {
 								return true;
 							}
@@ -857,7 +852,6 @@ de.factory('DeHelper', function() {
 					//var same=false;
 					for (var i in array) {
 						if (angular.equals(array[i], item)) {
-							//console.log(item.type);
 							return true;
 						}
 					}
@@ -867,7 +861,6 @@ de.factory('DeHelper', function() {
 					if (compare_key !== undefined) {
 						for (var i in array) {
 							if (array[i][compare_key]==item) {
-								//console.log("Found! "+array[i][compare_key]+", "+item);
 								return true;
 							}
 						}
@@ -962,6 +955,7 @@ de.provider('DeIcons', function() {
 		return this;
 	}
 });
+
 //DIRECTIVES
 /**
 * deLink:
@@ -983,7 +977,6 @@ de.directive('deLink', function() {
 		link: function(scope, element, attrs, mdb) {
 			var boundScope=scope.deLink;
 			if (scope.deLink.type !==undefined) {
-				console.log("Link type: "+scope.deLink.type);
 				if (scope.deLink.type=="api") {
 					element.on('click', function() {
 						scope.apiAction(
@@ -1054,23 +1047,15 @@ de.directive('deDateModel', function() {
 				if (typeof scope.dateObj=="string") {
 					var dateString=scope.dateObj.split("+")[0];
 					element.val(dateString);
-					console.log(dateString);
 				}
 				else {
-					console.log(scope.dateObj.getTimezoneOffset());
 					var jsString=scope.dateObj.toISOString().split("Z")[0];
-					console.log(jsString);
 					element.val(jsString);
 				}
 			}
 			element.on('change', function(ev) {
 				scope.$apply(function() {
-					console.log(element.val());
-					if (element.val()=="") {
-						console.log("Nothing yet...");
-					}
-					else {
-						//console.log(element.val());
+					if (element.val()!="") {
 						scope.dateObj=element.val();
 					}
 				})
@@ -1220,6 +1205,424 @@ de.directive('deCurrency', function() {
 		template:'<input type="number" ng-model="money" ng-show="editing" ng-blur="toggleEdit(false)"><span ng-bind="money | currency" ng-hide="editing" ng-click="toggleEdit(true)"></span>'
 		}
 });
+
+//v0.5
+/**
+ * Custom built search input container. Requires an <input> with de-search-bar as attribute. 
+ * Attributes:
+ * location-label-alias (string) - Title for the location search result. Default is Location
+ * estate-label-alias (string) - Title for the estate search result. Default is Estate
+ * keyword-label-alias (string) - Title for the keyword search result. Default is Keyword
+ * estate-url (string) - The base url to link to the estate detail view.
+ */
+de.directive('deSearch', function(DeEstates, DeAssets, DeLocations) {
+	return {
+		scope: {
+			locationLabel:"@?locationLabelAlias",
+			estateLabel:"@?estateLabelAlias",
+			keywordLabel: "@?keywordLabelAlias",
+			estateUrl:"@?estateUrl"
+		}, 
+		transclude:true,
+		controller: ["$scope", "$element", function DeSearchController($scope, $element) {
+			var vm = this;
+			//Init
+			this.$onInit = function() {
+				vm.name = $scope.name;
+				vm.searchText = "";
+				vm.searchEstateOptions = [];
+				vm.searchLocationOptions = [];
+				vm.searchLocality = false;
+				vm.searchState = false;
+				$scope.popupOpen = false;
+				$scope.showLocationSearch = false;
+				$scope.showEstateSearch = false;
+				var searchEstatePromise = false;
+				var searchLocationPromise = false;
+				//Set defaults
+				vm.locationLabel = $scope.locationLabel !== undefined ? $scope.locationLabel : "Location";
+				vm.estateLabel = $scope.estateLabel !== undefined ? $scope.estateLabel : "Estate";
+				vm.keywordLabel = $scope.keywordLabel !== undefined ? $scope.keywordLabel : "Keyword";
+				vm.estateUrl = $scope.estateUrl !== undefined ? $scope.estateUrl: "/detail/";
+			}
+			vm.setSearchControl = function(searchControl) {
+				$scope.searchControl = searchControl;
+			}
+			vm.searchChanged = function(newSearch, oldSearch) { 
+				vm.searchType = "";
+				//Don't do search if empty or if there has been no changes. Clear everything
+				if (newSearch == "") {
+					vm.searchText = ""; 
+					$scope.searchControl.searchText = ""; //Updates the child search bar. 
+					$scope.searchControl.searchLocality = false;
+					$scope.searchControl.searchState = false;
+					vm.searchText = "";
+					vm.searchLocality = false;
+					vm.searchState = false;
+					return;
+				}
+				if (vm.searchText == newSearch) { return; }
+				vm.searchText = newSearch;
+				vm.searchType = vm.keywordLabel;
+				//TODO: Search modes. 
+				//Setup search locations. 
+				searchLocationPromise = DeLocations.data({
+					name: vm.searchText, 
+					fields: 'id,name,state_code,type',
+					types: 'LOCALITY'
+				}, 'data').then(function(response) {
+					searchLocationPromise = false; //cleanup
+					vm.searchLocationOptions = [];
+					var j = 0;
+					for (var i = 0; i < response.data.length && j < 5; i++) {
+						if (!('state_code' in response.data[i])) { continue; }
+						vm.searchLocationOptions.push({
+							label: response.data[i].name + ', ' + response.data[i].state_code,
+							locality: response.data[i].name,
+							state_code: response.data[i].state_code
+						});
+						j++;
+					}
+					$scope.popupOpen = true;
+					$scope.showLocationSearch = true;
+				}, function(error) {console.log(error) });
+				//Setup search estates. 
+				searchEstatePromise = DeEstates.data({
+					name: vm.searchText, 
+					fields: 'id,name',
+					size: 5
+				}).then(function (response) {
+						searchEstatePromise = false;
+						vm.searchEstateOptions = [];
+						for (var i = 0; i < Math.min(5, response.data.length); i++) {
+							vm.searchEstateOptions.push({
+								label: response.data[i].name,
+								estateId: response.data[i].id
+							});
+						}
+						$scope.popupOpen = true;	
+						//vm.showSearch = true;
+						$scope.showEstateSearch = true;
+					}, function (error) { });
+			}
+			vm.searchLocationClicked = function(location) {
+				$scope.searchControl.searchText = location.label; //Updates the child search bar. 
+				$scope.searchControl.searchLocality = location.locality;
+				$scope.searchControl.searchState = location.state_code;
+				$scope.searchControl.searchUpdated();
+				vm.searchText = location.label;
+				vm.searchLocality = location.locality;
+				vm.searchState = location.state_code;
+				vm.searchType = vm.locationLabel.toLowerCase();
+				$scope.showEstateSearch = false;
+				$scope.showLocationSearch = false;
+			}
+			vm.searchKeywordClicked = function() {
+				$scope.searchControl.searchLocality = false;
+				$scope.searchControl.searchState = false;
+				$scope.searchControl.searchUpdated();
+				vm.searchLocality = false;
+				vm.searchState = false;
+				vm.searchType = vm.keywordLabel.toLowerCase();
+				$scope.showEstateSearch = false;
+				$scope.showLocationSearch = false;
+			}
+		}], 
+		controllerAs: 'sc',
+		link: function(scope, element, attr, ownCtrl) {
+			//Track windows click for clickout close event. 
+			var winClickEventConstant = "windowsClicked";
+			window.onclick = function (ev) {
+				$rootScope.$broadcast(winClickEventConstant);
+			}
+			scope.$on(winClickEventConstant, function (ev, data) {
+				if (data) {
+					if (data.$id != ev.currentScope.$id && ev.currentScope.popupOpen) {
+						ev.currentScope.popupOpen = false; //No need to $apply, as previous event would've fired it off. 
+						if (ev.currentScope.searchControl !== undefined && ev.currentScope.searchControl.onClose !== undefined) {
+							var searchScope = {
+								"keyword": ev.currentScope.searchControl.searchText,
+								"locality": ev.currentScope.searchControl.searchLocality,
+								"state_code": ev.currentScope.searchControl.searchState
+							};
+							ev.currentScope.searchControl.onClose({"$searchScope":searchScope});
+						}
+					}
+				}
+				else {
+					scope.$apply(function () {
+						if (ev.currentScope.popupOpen) {
+							ev.currentScope.popupOpen = false;
+							if (ev.currentScope.searchControl !== undefined && ev.currentScope.searchControl.onClose !== undefined) {
+								var searchScope = {
+									"keyword": ev.currentScope.searchControl.searchText,
+									"locality": ev.currentScope.searchControl.searchLocality,
+									"state_code": ev.currentScope.searchControl.searchState
+								};
+								ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
+							}
+						}
+					});
+				}
+			});
+		},
+		template: '<div ng-transclude></div><span class="searchinput-type">{{sc.searchType}}</span>'+
+			'<div class="searchinput-dropdown" ng-show="popupOpen">'+
+				'<div class="keyword-search" ng-click="sc.searchKeywordClicked()"><h4>{{sc.keywordLabel}}: </h4><span class="search-term">{{sc.searchText}}</span></div>'+
+				'<div ng-if="showLocationSearch"><h4>{{sc.locationLabel}}</h4>'+
+					'<ul><li ng-repeat="searchOption in sc.searchLocationOptions track by $index" ng-click="sc.searchLocationClicked(searchOption)">'+
+						'<span>{{searchOption.label}}</span>'+
+					'</li></ul>'+
+				'</div>'+
+				'<div ng-if="showEstateSearch"><h4>{{sc.estateLabel}}</h4>'+
+					'<ul><li ng-repeat="searchOption in sc.searchEstateOptions track by $index">'+
+						'<span><a ng-href="{{sc.estateUrl + searchOption.estateId}}">{{searchOption.label}}</a></span>'+
+					'</li></ul>'+
+				'</div>'+
+			'</div>'
+	}
+})
+/**
+ * Custom built search input that will search the Data Estate API. This requires the DE API services. Used as an attribute on INPUT
+ * This requires the parent "de-search" container. 
+ * search-types (| separated string) - Indicates what search types to enable. 
+ * 	- KEYWORD (default) - No popup, just does a keyword search to the API. 
+ *  - NAME (default) - Brings up a popup list of estates matching the name. 
+ *  - LOCATION (default) - Brings up a list of locations. 
+ * on-submit (function($searchScope)) - Optional. Used for when location is clicked or keyword is clocked.
+ * 		Returns the $searchScope object, with three properties: keyword, locality and state_code. 
+ * on-close (function($searchScope)) - Optional. Similar to the above, but fired when the dropdown closes. 
+ * on-clear (function($searchScope)) - Optional. Fired when the search field is cleared. 
+ */
+.directive('deSearchBar', function() {
+	return {
+		restrict: "A",
+		require: "^^?deSearch", 
+		scope: {
+			searchModes: "@?",
+			searchText: "=?ngModel", 
+			onSubmit: '&?',
+			onClose: '&?',
+			onClear: '&?'
+		}, 
+		link: function(scope, elem, attr, parentCtrl) {
+			parentCtrl.setSearchControl(scope);
+			scope.$watch('searchText', function(newVal, oldVal, curScope) {
+				if (newVal != oldVal) {
+					parentCtrl.searchChanged(newVal, oldVal);
+				}
+				if (newVal == "" && scope.onClear !== undefined) {
+					scope.onClear({
+						"$searchScope": {
+							"keyword": "",
+							"locality": false,
+							"state_code": false
+						}
+					});
+				}
+			}, true);
+			scope.searchUpdated = function() {
+				if (scope.onSubmit !== undefined) {
+					var searchScope = {
+						"keyword":scope.searchText, 
+						"locality":scope.searchLocality, 
+						"state_code":scope.searchState
+					};
+					scope.onSubmit({"$searchScope":searchScope});
+				}
+			}
+		}
+	}
+});
+
+//v0.5
+/**
+ * Creates a custom dropdown menu. Used as an element. 
+ * DOM Attributes:
+ * multi (bool | expression) - Indicates whether the selection allows for multiple selection. 
+ * label (expression) - Label of the control. It can be a function. 
+ * options (array | expression) - The source of the dropdown menu. This needs to be an array. 
+ * model (angular scope) - The two-way bound scope for the selected (array or single value), hijects the ng-model. 
+ * label-model (angular scope) - Optional, used to contain selected "label" if the selected value is not sufficient.
+ * label-field (string) - Optional. If the options is an array of objects, indicates which property to use to show in the option's label. 
+ * value-field (string) - Optional. If the options is an array of objects, indicates which property to use to show in the option's value. Also shows what is returned. 
+ * button-text (expression) - Optional. Used for the "Apply" button label. 
+ * on-submit (function($searchScope, $event)) - Optional. Used for when the apply button is clicked. Default is closing the menu.
+ * 		returns the $searchScope object with 2 properties, selectedValue and selectedLabel
+ * on-close (function($searchScope, $event)) - Optional. Similar to on submit, but is fired with the dropdown window is dismissed. 
+ */
+de.directive('deDropdown', function($rootScope) {
+	return {
+		restrict: 'E', 
+		scope: {
+			multiple:'=multi',
+			label:'=label', 
+			options:'=options',
+			model:'=ngModel',
+			labelModel:'=?',
+			labelField:'@?',
+			valueField:'@?',
+			buttonText:'=?buttonLabel', 
+			onSubmit:'&?', 
+			onClose: '&?'
+		},
+		link: function(scope, elem, attr) {
+			scope.popupOpen=false;
+			if (scope.buttonText === undefined) {
+				scope.buttonText="Apply";
+			}
+			scope.clearButtonText = "Clear";
+			var winClickEventConstant = "windowsClicked";
+			window.onclick = function (ev) {
+				$rootScope.$broadcast(winClickEventConstant);
+			}
+			//Bind custom event
+			scope.$on(winClickEventConstant, function(ev, data) {
+				if (data) {
+					if (data.$id != ev.currentScope.$id && ev.currentScope.popupOpen) {
+						ev.currentScope.popupOpen = false; //No need to $apply, as previous event would've fired it off. 
+						if (ev.currentScope.onClose !== undefined) {
+							var searchScope = {
+								"selectedValue": scope.model,
+								"selectedLabel": scope.labelModel
+							};
+							ev.currentScope.onClose({"$searchScope":searchScope, "$event":ev});
+						}
+					}
+				}
+				else {
+					scope.$apply(function () {
+						if (ev.currentScope.popupOpen) {
+							ev.currentScope.popupOpen = false;
+							if (ev.currentScope.onClose !== undefined) {
+								var searchScope = {
+									"selectedValue": scope.model,
+									"selectedLabel": scope.labelModel
+								};
+								ev.currentScope.onClose({ "$searchScope": searchScope, "$event": ev });
+							}
+						}
+					});
+				}
+			});
+			//TODO: ADD PARENT ID!!!
+			scope.parentId = attr.id===undefined ? scope.$id : attr.id;
+			//if multi
+			if (scope.model === undefined && scope.multiple) {
+				scope.model = [];
+			}
+			scope.optionClicked=function(optionVal, ev) {
+				if (ev) {
+					ev.stopPropagation();
+				}
+				//For multi
+				var checkedItem = optionVal;
+				if (scope.valueField !== undefined) {
+					checkedItem = optionVal[scope.valueField];
+				}
+				var itemIndex = -1;
+				if (scope.multiple) {
+					var itemIndex = scope.model.indexOf(checkedItem);
+					if (itemIndex >= 0) { //has it. 
+						scope.model.splice(itemIndex,1);
+					}
+					else {
+						scope.model.push(checkedItem);
+					}
+				}
+				else {
+					scope.model=checkedItem;
+					scope.popupOpen=false;
+				}
+				//Label Model (if used)
+				if (scope.labelModel !== undefined) {
+					var labelItem = optionVal;
+					if (scope.labelField !== undefined) {
+						labelItem = optionVal[scope.labelField];
+					}
+					if (scope.multiple) {
+						if (itemIndex >= 0) { //has it. 
+							scope.labelModel.splice(itemIndex, 1);
+						}
+						else {
+							scope.labelModel.push(labelItem);
+						}
+					}
+					else {
+						scope.labelModel = labelItem;
+					}
+				}
+			}
+			scope.toggleDropdown=function(ev, open) {
+				if (ev) {
+					ev.stopPropagation();
+					$rootScope.$broadcast("windowsClicked", scope);
+				}
+				scope.togglePopup(open);
+			}
+			scope.togglePopup = function(open) {
+				if (open === undefined) {
+					scope.popupOpen = !scope.popupOpen;
+				}
+				else {
+					scope.popupOpen = open;
+				}
+			}
+			scope.itemInArray=function(haystack, needle) {
+				var needleItem = needle;
+				
+				if (scope.valueField !== undefined) {
+					needleItem = needle[scope.valueField];
+				}
+				if (haystack.indexOf(needleItem) >= 0) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			scope.inputLabel=function(item) {
+				if (scope.labelField !== undefined) {
+					return item[scope.labelField];
+				}
+				else {
+					return item;
+				}
+			}
+			scope.submitSelection=function(ev) {
+				if (scope.onSubmit !== undefined) {
+					if (scope.onSubmit !== undefined) {
+						var searchScope = {
+							"selectedValue": scope.model,
+							"selectedLabel": scope.labelModel
+						};
+						scope.onSubmit({ "$searchScope": searchScope, "$event":ev });
+					}
+				}
+			};
+			scope.clearSelection = function(ev) {
+				if (ev) {
+					ev.stopPropagation();
+				}
+				scope.model = [];
+				if (scope.labelModel !== undefined ) {
+					scope.labelModel = [];
+				}
+			}
+			scope.noInvoke=function(ev) {
+				ev.stopPropagation();
+			}
+		},
+		template: '<div class="de-dropdown {{class}}" ng-click="toggleDropdown($event)">{{label}}</div><div class="de-dropdown-menu" ng-show="popupOpen"><ul class="de-dropdown-menu-list">'+
+			'<li ng-repeat="option in options track by $index">'+
+				'<label for="{{parentId}}-{{$index}}" ng-click="noInvoke($event)">'+
+				'<input type="checkbox" name="{{parentId}}-{{$index}}" ng-checked="itemInArray(model, option)" id="{{parentId}}-{{$index}}" ng-show="multiple"'+
+				' ng-click="optionClicked(option, $event)">'+
+					'<span>{{ inputLabel(option) }}</span></label>'+
+			'</li></ul><button type="button" class="de-button btn-clear" ng-click="clearSelection($event)" ng-if="multiple">{{ clearButtonText }}</button>'+
+			'<button type="button" class="de-button" ng-click="submitSelection($selectedScope, $event)">{{ buttonText }}</button></div>'
+	}
+});
 //v0.3.7
 de.factory('DeChangeRegister', function(DeHelper) {
 	var changeSets={};
@@ -1262,7 +1665,6 @@ de.factory('DeChangeRegister', function(DeHelper) {
 					if (dataId!==undefined && newData[setName][dataId]!==undefined) {
 						originals[setName][dataId]=angular.copy(newData[setName][dataId]);
 						if (trackedScopes[setName]!==undefined && trackedScopes[setName][dataId]!==undefined) {
-							//console.log(trackedScopes[setName][dataId].DeChangeReset);
 							if (typeof trackedScopes[setName][dataId].DeChangeReset==='function') {
 								trackedScopes[setName][dataId].DeChangeReset();
 							};
@@ -1289,8 +1691,6 @@ de.factory('DeChangeRegister', function(DeHelper) {
 		trackChanges:function(setName, dataId, compareData) {
 			if (originals[setName] !==undefined && originals[setName][dataId]!==undefined) {
 				var changes=DeHelper.getDiff(originals[setName][dataId],compareData,true);
-				// console.log(compareData);
-				// console.log(originals[setName][dataId]);
 				if (!DeHelper.isEmpty(changes.changed) || !DeHelper.isEmpty(changes.removed)) {
 				//if (!angular.equals(originals[setName][dataId], compareData)) {
 					if (changeSets[setName]===undefined) {
@@ -1461,5 +1861,36 @@ de.filter('filterId', function() {
 			}
 		}
 		return "";
+	}
+});
+//v5.0
+de.filter('starratings', function() {
+	return function(ratingText) {
+		var oneStar = '<span class="fa fa-star"></span>';
+		var halfStar = '<span class="fa fa-star-half-empty"></span>';
+		switch (ratingText) {
+			case "NA":
+				return '<div class="rating">Not Available</div>';
+			case "1":
+				return '<div class="rating">'+oneStar+'</div>';
+			case "1.5":
+				return '<div class="rating">' + oneStar + halfStar +'</div>';
+			case "2":
+				return '<div class="rating">' + oneStar + oneStar + '</div>';
+			case "2.5":
+				return '<div class="rating">' + oneStar + oneStar + halfStar + '</div>';
+			case "3":
+				return '<div class="rating">' + oneStar + oneStar + oneStar + '</div>';
+			case "3.5":
+				return '<div class="rating">' + oneStar + oneStar + oneStar + halfStar + '</div>';
+			case "4":
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + '</div>';
+			case "4.5":
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + halfStar +'</div>';
+			case "5":
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + oneStar + '</div>';
+			default:
+				return "";
+		}
 	}
 });
