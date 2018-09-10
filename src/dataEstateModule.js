@@ -179,6 +179,14 @@ de.factory('DeAssets', function(DeApi) {
 			var endpoints="/assets/data/"+id;
 			return DeApi.get(endpoints, params);
 		},
+		// v0.5
+		articles: function(estate, slug, params = {}) {
+			if (slug==undefined) {
+				slug="";
+			}
+			var endpoints="/assets/articles/" + estate + "/" + slug;
+			return DeApi.get(endpoints, params);
+		},
 		// v0.1.3
 		timetable:function(params) {
 			var endpoints="/assets/timetable/";
