@@ -183,7 +183,6 @@ de.factory('DeAssets', function (DeApi) {
 			var endpoints = "/assets/data/" + id;
 			return DeApi.get(endpoints, params);
 		},
-		// v0.5.3?
 		articles: function(estate, slug, params = {}) {
 			if (slug==undefined) {
 				slug="";
@@ -886,7 +885,11 @@ de.factory('DeHelper', function () {
 			}
 		},
 		getQueryParameter: function (str) {
-			var queryDoc = document.location.search.replace(/(^\?)/, '').split("&").map(function (n) { return n = n.split("="), this[n[0]] = n[1], this }.bind({}))[0];
+			var locationSearch = document.location.search.replace(/(^\?)/, '');
+			if (locationSearch=="") {
+				return {};
+			}
+			var queryDoc = locationSearch.split("&").map(function (n) {	return n = n.split("="),this[n[0]] = n[1], this }.bind({}))[0];
 			if (str === undefined) {
 				return queryDoc;
 			}
@@ -1311,7 +1314,6 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				}
 				searchEstatePromise = DeEstates.data(vm.searchParams)
 					.then(function (response) {
-
 						searchEstatePromise = false;
 						vm.searchEstateOptions = [];
 						for (var i = 0; i < Math.min(5, response.data.length); i++) {
@@ -1361,7 +1363,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				$scope.searchControl.searchLocality = location.locality;
 				$scope.searchControl.searchState = location.state_code;
 				$scope.searchControl.searchUpdated();
-				console.log("Search location updated" + $scope.searchControl.searchLocality);
+				//console.log("Search location updated" + $scope.searchControl.searchLocality);
 				vm.searchText = location.label;
 				vm.searchLocality = location.locality;
 				vm.searchState = location.state_code;
@@ -1412,7 +1414,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 									"locality": ev.currentScope.searchControl.searchLocality,
 									"state_code": ev.currentScope.searchControl.searchState
 								};
-								console.log(ev.currentScope);
+								//console.log(ev.currentScope);
 								ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
 							}
 						}
@@ -1485,7 +1487,6 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 							"state_code": scope.searchState
 						};
 						scope.onSubmit({ "$searchScope": searchScope });
-						console.log(searchScope);
 					}
 				}
 			}
@@ -1935,35 +1936,41 @@ de.filter('starratings', function () {
 	return function (ratingText) {
 		var oneStar = '<span class="fa fa-star"></span>';
 		var halfStar = '<span class="fa fa-star-half-empty"></span>';
+
 		switch (ratingText) {
 			case "NA":
 			case -1:
 				return '<div class="rating">Not Available</div>';
 			case "1":
+			case "1.0":
 			case 1:
 				return '<div class="rating">' + oneStar + '</div>';
 			case "1.5":
 			case 1.5:
 				return '<div class="rating">' + oneStar + halfStar + '</div>';
 			case "2":
+			case "2.0":
 			case 2:
 				return '<div class="rating">' + oneStar + oneStar + '</div>';
 			case "2.5":
 			case 2.5:
 				return '<div class="rating">' + oneStar + oneStar + halfStar + '</div>';
 			case "3":
+			case "3.0":
 			case 3:
 				return '<div class="rating">' + oneStar + oneStar + oneStar + '</div>';
 			case "3.5":
 			case 3.5:
 				return '<div class="rating">' + oneStar + oneStar + oneStar + halfStar + '</div>';
 			case "4":
+			case "4.0":
 			case 4:
 				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + '</div>';
 			case "4.5":
 			case 4.5:
 				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + halfStar + '</div>';
 			case "5":
+			case "5.0":
 			case 5:
 				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + oneStar + '</div>';
 			default:
