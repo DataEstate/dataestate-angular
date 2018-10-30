@@ -1,249 +1,259 @@
-//Version 0.4.9 added "none" auth type
-var de=angular.module("dataEstateModule", []);
+//Version 0.5.3 searchBar modes, updated "GET" to not decode keyword quotes twice. 
+var de = angular.module("dataEstateModule", []);
 //CONSTANTS
-de.constant('VERSION', 0.4);
- //Main Provider
-de.provider('DeApi', function() {
-	this.apiUrl="https://api.dataestate.net/v2"; //Default
-	this.apiKey="";
-	this.authType="api-key"; //Default v0.1.4
-	this.oauthData={};
+de.constant('VERSION', 0.5);
+//Main Provider
+de.provider('DeApi', function () {
+	this.apiUrl = "https://api.dataestate.net/v2"; //Default
+	this.apiKey = "";
+	this.authType = "api-key"; //Default v0.1.4
+	this.oauthData = {};
 	//Configurations.
-	this.setApi=function(api_url) {
-		this.apiUrl=api_url;
+	this.setApi = function (api_url) {
+		this.apiUrl = api_url;
 	}
-	this.setApiKey=function(api_key) {
-		this.apiKey=api_key;
+	this.setApiKey = function (api_key) {
+		this.apiKey = api_key;
 	}
 	//v0.1.4
-	this.setToken=function(auth_token) {
-		this.oauthData.token=auth_token;
+	this.setToken = function (auth_token) {
+		this.oauthData.token = auth_token;
 	}
 	//v0.4.9: added "none" for proxies
-	this.setAuthType=function(auth_type) {
-		var allowedTypes=["token", "api-key", "none"];
+	this.setAuthType = function (auth_type) {
+		var allowedTypes = ["token", "api-key", "none"];
 		if (allowedTypes.indexOf(auth_type) >= 0) {
-			this.authType=auth_type;
+			this.authType = auth_type;
 		}
 	}
-	this.getAuthType=function() {
+	this.getAuthType = function () {
 		return this.authType;
 	}
 	//RETURN THIS
-	this.$get=function($http) {
+	this.$get = function ($http) {
 		//Base requester.
-		this.get=function(endpoints, params) {
+		this.get = function (endpoints, params) {
 			if (endpoints !== undefined) {
-				var httpReq={
-					url:this.apiUrl+endpoints,
-					method:"GET"
+				var httpReq = {
+					url: this.apiUrl + endpoints,
+					method: "GET"
 				};
-				if (this.authType=="api-key") {
-					if (params !==undefined && !params.hasOwnProperty("api_key")) {
-						params.api_key=this.apiKey;
+				if (this.authType == "api-key") {
+					if (params !== undefined && !params.hasOwnProperty("api_key")) {
+						params.api_key = this.apiKey;
 					}
 				}
-				else if (this.authType=="token") {
-					httpReq.headers={
-						"Authorization":"Bearer "+this.oauthData.token
+				else if (this.authType == "token") {
+					httpReq.headers = {
+						"Authorization": "Bearer " + this.oauthData.token
 					};
 				}
-				httpReq.params=params;
+				if (params !== undefined && params.keyword !== undefined) {
+					params.keyword = decodeURI(params.keyword);
+				}
+				httpReq.params = params;
 				return $http(httpReq);
 			}
 		}
-		this.put=function(endpoints, data) {
-			if (endpoints !==undefined) {
-				var rh={};
-				if (this.authType=="api-key") {
-					rh["API-KEY"]=this.apiKey
+		this.put = function (endpoints, data) {
+			if (endpoints !== undefined) {
+				var rh = {};
+				if (this.authType == "api-key") {
+					rh["API-KEY"] = this.apiKey
 				}
-				else if (this.authType=="token") {
-					rh["Authorization"]="Bearer "+this.oauthData.token;
+				else if (this.authType == "token") {
+					rh["Authorization"] = "Bearer " + this.oauthData.token;
 				};
 				return $http({
-					url:this.apiUrl+endpoints,
-					method:"PUT",
-					data:data,
-					headers:rh
+					url: this.apiUrl + endpoints,
+					method: "PUT",
+					data: data,
+					headers: rh
 				});
 			}
 		}
-		this.post=function(endpoints, data) {
-			if (endpoints !==undefined) {
-				var rh={};
-				if (this.authType=="api-key") {
-					rh["API-KEY"]=this.apiKey
+		this.post = function (endpoints, data) {
+			if (endpoints !== undefined) {
+				var rh = {};
+				if (this.authType == "api-key") {
+					rh["API-KEY"] = this.apiKey
 				}
-				else if (this.authType=="token") {
-					rh["Authorization"]="Bearer "+this.oauthData.token;
+				else if (this.authType == "token") {
+					rh["Authorization"] = "Bearer " + this.oauthData.token;
 				}
 				return $http({
-					url:this.apiUrl+endpoints,
-					method:"POST",
-					data:data,
-					headers:rh
+					url: this.apiUrl + endpoints,
+					method: "POST",
+					data: data,
+					headers: rh
 				});
 			}
 		}
-		this.delete=function(endpoints) {
-			if (endpoints !==undefined) {
-				var rh={};
-				if (this.authType=="api-key") {
-					rh["API-KEY"]=this.apiKey
+		this.delete = function (endpoints) {
+			if (endpoints !== undefined) {
+				var rh = {};
+				if (this.authType == "api-key") {
+					rh["API-KEY"] = this.apiKey
 				}
-				else if (this.authType=="token") {
-					rh["Authorization"]="Bearer "+this.oauthData.token;
+				else if (this.authType == "token") {
+					rh["Authorization"] = "Bearer " + this.oauthData.token;
 				}
 				return $http({
-					url:this.apiUrl+endpoints,
-					method:"DELETE",
-					headers:rh
+					url: this.apiUrl + endpoints,
+					method: "DELETE",
+					headers: rh
 				});
 			}
 		}
 		//Must follow RFC6902 structure
-		this.patch=function(endpoints, pipeline) {
-			if (endpoints !==undefined) {
-				var rh={};
-				if (this.authType=="api-key") {
-					rh["API-KEY"]=this.apiKey
+		this.patch = function (endpoints, pipeline) {
+			if (endpoints !== undefined) {
+				var rh = {};
+				if (this.authType == "api-key") {
+					rh["API-KEY"] = this.apiKey
 				}
-				else if (this.authType=="token") {
-					rh["Authorization"]="Bearer "+this.oauthData.token;
+				else if (this.authType == "token") {
+					rh["Authorization"] = "Bearer " + this.oauthData.token;
 				}
 				return $http({
-					url:this.apiUrl+endpoints,
-					method:"PATCH",
-					data:pipeline,
-					headers:rh
+					url: this.apiUrl + endpoints,
+					method: "PATCH",
+					data: pipeline,
+					headers: rh
 				});
 			}
-		} 
+		}
 		return this;
 	}
 });
 //Estate Service
-de.factory('DeEstates', function(DeApi) {
+de.factory('DeEstates', function (DeApi) {
 	return {
-		data: function(params, id) {
-			if (id==undefined) {
-				id="";
+		data: function (params, id) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoints="/estates/data/"+id;
+			var endpoints = "/estates/data/" + id;
 			return DeApi.get(endpoints, params);
 		},
-		update: function(id, data, language, remove_data, add_data) {
-			var endpoints="/estates/data/"+id;
-			var putData={
-				"data":data
+		update: function (id, data, language, remove_data, add_data) {
+			var endpoints = "/estates/data/" + id;
+			var putData = {
+				"data": data
 			};
-			if (language !==undefined && language !="english") {
-				putData.language=language;
+			if (language !== undefined && language != "english") {
+				putData.language = language;
 			}
-			if (remove_data !==undefined && remove_data !==null) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		},
-		create: function(category_code, data) {
-			var endpoints="/estates/data/";
-			var postData={
-				"data":data
+		create: function (category_code, data) {
+			var endpoints = "/estates/data/";
+			var postData = {
+				"data": data
 			}
 			return DeApi.post(endpoints, postData);
 		},
-		remove: function(id) {
-			var endpoints="/estates/data/"+id;
+		remove: function (id) {
+			var endpoints = "/estates/data/" + id;
 			return DeApi.delete(endpoints);
 		}
 	}
 });
 // v0.1.6: assets added categories as dictionary.
-de.factory('DeAssets', function(DeApi) {
-	var currentEstate="";
+de.factory('DeAssets', function (DeApi) {
+	var currentEstate = "";
 	return {
-		setEstate:function(estate) {
-			currentEstate=estate;
+		setEstate: function (estate) {
+			currentEstate = estate;
 		},
-		getEstate:function() {
+		getEstate: function () {
 			return currentEstate;
 		},
-		data: function(params, id) {
-			if (id==undefined) {
-				id="";
+		data: function (params, id) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoints="/assets/data/"+id;
+			var endpoints = "/assets/data/" + id;
+			return DeApi.get(endpoints, params);
+		},
+		articles: function (estate, slug, params = {}) {
+			if (slug == undefined) {
+				slug = "";
+			}
+			var endpoints = "/assets/articles/" + estate + "/" + slug;
 			return DeApi.get(endpoints, params);
 		},
 		// v0.1.3
-		timetable:function(params) {
-			var endpoints="/assets/timetable/";
+		timetable: function (params) {
+			var endpoints = "/assets/timetable/";
 			return DeApi.get(endpoints, params);
 		},
 		//v0.1.8
-		flights:function(params) {
-			var endpoints="/assets/flights/";
+		flights: function (params) {
+			var endpoints = "/assets/flights/";
 			return DeApi.get(endpoints, params);
 		},
-		update: function(id, data, language, remove_data, add_data) {
-			var endpoints="/assets/data/"+id;
-			var putData={
-				"data":data
+		update: function (id, data, language, remove_data, add_data) {
+			var endpoints = "/assets/data/" + id;
+			var putData = {
+				"data": data
 			};
-			if (language !==undefined) {
-				putData.language=language;
+			if (language !== undefined) {
+				putData.language = language;
 			}
-			if (remove_data !==undefined && remove_data !==null && Object.keys(remove_data).length > 0) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null && Object.keys(remove_data).length > 0) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		},
-		create: function(estate, type, data) {
-			var endpoints="/assets/data/";
+		create: function (estate, type, data) {
+			var endpoints = "/assets/data/";
 			if (!data.hasOwnProperty("type")) {
-				data.type=type;
+				data.type = type;
 			}
-			if (estate===undefined) {
-				estate=currentEstate;
+			if (estate === undefined) {
+				estate = currentEstate;
 			}
-			var postData={
-				"data":data,
-				"estate_id":estate
+			var postData = {
+				"data": data,
+				"estate_id": estate
 			}
 			return DeApi.post(endpoints, postData);
 		},
-		remove: function(id) {
-			var endpoints="/assets/data/"+id;
+		remove: function (id) {
+			var endpoints = "/assets/data/" + id;
 			return DeApi.delete(endpoints);
-		}, 
-		bulkRemove:function(estate, type, ids) {
-			var endpoints="/assets/data/"+estate;
-			var bulkPipeline=[];
+		},
+		bulkRemove: function (estate, type, ids) {
+			var endpoints = "/assets/data/" + estate;
+			var bulkPipeline = [];
 			for (var i in ids) {
-				bulkPipeline.push({"op":"remove", "path":type+"/"+ids[i]});
+				bulkPipeline.push({ "op": "remove", "path": type + "/" + ids[i] });
 			}
 			return DeApi.patch(endpoints, bulkPipeline);
 		}
 	}
 });
 // v0.3.6
-de.factory('DeUsers', function(DeApi, $q) {
-	var currentUser=null;
+de.factory('DeUsers', function (DeApi, $q) {
+	var currentUser = null;
 	return {
-		data:function(reload) {
-			var d=$q.defer();
-			var endpoints="/users/data/";
-			if (reload==true || currentUser===null) {
+		data: function (reload) {
+			var d = $q.defer();
+			var endpoints = "/users/data/";
+			if (reload == true || currentUser === null) {
 				DeApi.get(endpoints).then(
 					function success(res) {
-						currentUser=res.data;
+						currentUser = res.data;
 						d.resolve(currentUser);
 					},
 					function error(err) {
@@ -258,413 +268,417 @@ de.factory('DeUsers', function(DeApi, $q) {
 	}
 })
 // v0.1.2: taxonomy - TODO: Get from API.
-de.factory('DeTaxonomy', function(DeApi) {
-	var subtypes=[
-	    {
-	        "type" : "LANDMARK",
-	        "description" : "Landmark"
-	    },
-	    {
-	        "type" : "EDUCATION",
-	        "description" : "Educational"
-	    },
-	    {
-	        "type" : "FOODDRINK",
-	        "description" : "Food and Drink"
-	    },
-	    {
-	        "type" : "MUSICAL",
-	        "description" : "Musical Performance"
-	    },
-	    {
-	        "type" : "CEREMONY",
-	        "description" : "Ceremony"
-	    },
-	    {
-	        "type" : "SPORT",
-	        "description" : "Sports Event"
-	    },
-	    {
-	        "type" : "PERFORMANCE",
-	        "description" : "Performances"
-	    },
-	    {
-	        "type" : "PARADE",
-	        "description" : "March and Parade"
-	    },
-	    {
-	        "type" : "CULTURAL",
-	        "description" : "Cutural"
-	    },
-	    {
-	        "type" : "ACTIVITY",
-	        "description" : "Activities"
-	    },
-	    {
-	        "type" : "MEDITATION",
-	        "description" : "Meditation"
-	    },
-	    {
-	        "type" : "PHOTOGRAPHY",
-	        "description" : "Photography Event"
-	    },
-	    {
-	        "type" : "TALK",
-	        "description" : "Talks"
-	    },
-	    {
-	        "type" : "FORUM",
-	        "description" : "Forums"
-	    },
-	    {
-	        "type" : "FOOD",
-	        "description" : "Food"
-	    },
-	    {
-	        "type" : "DESSERT",
-	        "description" : "Snacks and Desserts"
-	    },
-	    {
-	        "type" : "DRINK",
-	        "description" : "Drinks"
-	    },
-	    {
-	        "type" : "SHOP",
-	        "description" : "Shops"
-	    },
-	    {
-	        "type" : "INFO",
-	        "description" : "Information"
-	    },
-	    {
-	        "type" : "VOLUNTEER",
-	        "description" : "Volunteers"
-	    },
-	    {
-	        "type" : "DISPLAY",
-	        "description" : "Art and Display"
-	    },
-	    {
-	        "type" : "SERVICE",
-	        "description" : "Services"
-	    }
-	];
-	var locations=[
+de.factory('DeTaxonomy', function (DeApi) {
+	var subtypes = [
 		{
-			"id" : "BNELETTER",
-			"name":"Brisbane Letters",
-			"loc":[
+			"type": "LANDMARK",
+			"description": "Landmark"
+		},
+		{
+			"type": "EDUCATION",
+			"description": "Educational"
+		},
+		{
+			"type": "FOODDRINK",
+			"description": "Food and Drink"
+		},
+		{
+			"type": "MUSICAL",
+			"description": "Musical Performance"
+		},
+		{
+			"type": "CEREMONY",
+			"description": "Ceremony"
+		},
+		{
+			"type": "SPORT",
+			"description": "Sports Event"
+		},
+		{
+			"type": "PERFORMANCE",
+			"description": "Performances"
+		},
+		{
+			"type": "PARADE",
+			"description": "March and Parade"
+		},
+		{
+			"type": "CULTURAL",
+			"description": "Cutural"
+		},
+		{
+			"type": "ACTIVITY",
+			"description": "Activities"
+		},
+		{
+			"type": "MEDITATION",
+			"description": "Meditation"
+		},
+		{
+			"type": "PHOTOGRAPHY",
+			"description": "Photography Event"
+		},
+		{
+			"type": "TALK",
+			"description": "Talks"
+		},
+		{
+			"type": "FORUM",
+			"description": "Forums"
+		},
+		{
+			"type": "FOOD",
+			"description": "Food"
+		},
+		{
+			"type": "DESSERT",
+			"description": "Snacks and Desserts"
+		},
+		{
+			"type": "DRINK",
+			"description": "Drinks"
+		},
+		{
+			"type": "SHOP",
+			"description": "Shops"
+		},
+		{
+			"type": "INFO",
+			"description": "Information"
+		},
+		{
+			"type": "VOLUNTEER",
+			"description": "Volunteers"
+		},
+		{
+			"type": "DISPLAY",
+			"description": "Art and Display"
+		},
+		{
+			"type": "SERVICE",
+			"description": "Services"
+		}
+	];
+	var locations = [
+		{
+			"id": "BNELETTER",
+			"name": "Brisbane Letters",
+			"loc": [
 				-27.474147,
 				153.020482
 			]
 		},
 		{
-	        "id" : "QC",
-	        "name" : "Queensland Conservatorium",
-	        "loc" : [
-	            -27.4768193,
-	            153.0208075
-	        ]
-	    },
-	    {
-	    	"id":"LIANA",
-	    	"name":"Liana Lounge",
-	    	"loc": [
-	    		-27.475902, 153.021213
-	    	]
-	    },
-	    {
-	        "loc" : [
-	            -27.4706487,
-	            153.0170457
-	        ],
-	        "id" : "GOMA",
-	        "name" : "GOMA (Gallery of Modern Art)"
-	    },
-	    {
-	        "id" : "CF",
-	        "name" : "Cultural Forecourt",
-	        "loc" : [
-	            -27.4739896,
-	            153.0203686
-	        ]
-	    },
-	    {
-	        "loc" : [
-	            -27.4748418,
-	            153.0212796
-	        ],
-	        "id" : "RB",
-	        "name" : "Riverbank"
-	    },
-	    {
-	        "loc" : [
-	            -27.476474,
-	            153.021173
-	        ],
-	        "name" : "Lumbini Garden",
-	        "id" : "LG"
-	    },
-	    {
-	        "loc" : [
-	            -27.4771943,
-	            153.0217732
-	        ],
-	        "id" : "NB",
-	        "name" : "No Boundaries"
-	    },
-	    {
-	        "loc" : [
-	            -27.476186,
-	            153.021666
-	        ],
-	        "name" : "Rainforest Green",
-	        "id" : "RG"
-	    },
-	    {
-	        "id" : "CMP",
-	        "name" : "The South Bank Piazza",
-	        "loc" : [
-	            -27.4769716,
-	            153.0214888
-	        ]
-	    },
-	    {
-	        "id" : "PAS",
-	        "loc" : [
-	            -27.474771,
-	            153.0209563
-	        ],
-	        "name" : "Performing Arts Stage"
-	    }
+			"id": "QC",
+			"name": "Queensland Conservatorium",
+			"loc": [
+				-27.4768193,
+				153.0208075
+			]
+		},
+		{
+			"id": "LIANA",
+			"name": "Liana Lounge",
+			"loc": [
+				-27.475902, 153.021213
+			]
+		},
+		{
+			"loc": [
+				-27.4706487,
+				153.0170457
+			],
+			"id": "GOMA",
+			"name": "GOMA (Gallery of Modern Art)"
+		},
+		{
+			"id": "CF",
+			"name": "Cultural Forecourt",
+			"loc": [
+				-27.4739896,
+				153.0203686
+			]
+		},
+		{
+			"loc": [
+				-27.4748418,
+				153.0212796
+			],
+			"id": "RB",
+			"name": "Riverbank"
+		},
+		{
+			"loc": [
+				-27.476474,
+				153.021173
+			],
+			"name": "Lumbini Garden",
+			"id": "LG"
+		},
+		{
+			"loc": [
+				-27.4771943,
+				153.0217732
+			],
+			"id": "NB",
+			"name": "No Boundaries"
+		},
+		{
+			"loc": [
+				-27.476186,
+				153.021666
+			],
+			"name": "Rainforest Green",
+			"id": "RG"
+		},
+		{
+			"id": "CMP",
+			"name": "The South Bank Piazza",
+			"loc": [
+				-27.4769716,
+				153.0214888
+			]
+		},
+		{
+			"id": "PAS",
+			"loc": [
+				-27.474771,
+				153.0209563
+			],
+			"name": "Performing Arts Stage"
+		}
 	];
-	var categories={
-		"ACCOMM":"Accommodation",
-		"APP":"Application",
+	var categories = {
+		"ACCOMM": "Accommodation",
+		"APP": "Application",
 		"ATTRACTION": "Attraction",
 		"COMPANY": "Company",
-		"DESTINFO":"Destination Information",
-		"EVENT":"Event",
-		"GROUP":"Group",
-		"HIRE":"Hire",
-		"INFO":"Information Services",
-		"JOURNEY":"Journey",
-		"ORG":"Organisation",
-		"RESTAURANT":"Food and Drink",
-		"TOUR":"Tour",
-		"TRANSPORT":"Transport"
+		"DESTINFO": "Destination Information",
+		"EVENT": "Event",
+		"GROUP": "Group",
+		"HIRE": "Hire",
+		"INFO": "Information Services",
+		"JOURNEY": "Journey",
+		"ORG": "Organisation",
+		"RESTAURANT": "Food and Drink",
+		"TOUR": "Tour",
+		"TRANSPORT": "Transport"
 	};
-	var social=[
-		{id:"in",name:"Instagram"},{id:"fb",name:"Facebook"},{id:"li",name:"LinkedIn"}, {id:"tw",name:"Twitter"},{id:"yt",name:"YouTube"}
+	var social = [
+		{ id: "in", name: "Instagram" }, { id: "fb", name: "Facebook" }, { id: "li", name: "LinkedIn" }, { id: "tw", name: "Twitter" }, { id: "yt", name: "YouTube" }
 	];
 	return {
-		subtypes: function() {
+		subtypes: function () {
 			return subtypes;
 		},
-		locations: function() {
+		locations: function () {
 			return locations;
 		},
-		categories: function() {
+		categories: function () {
 			return categories;
 		},
-		accreditations: function() {
-			var endpoints="/taxonomy/data/ACCREDITN";
+		accreditations: function () {
+			var endpoints = "/taxonomy/data/ACCREDITN";
 			return DeApi.get(endpoints, {});
 		},//v0.3
-		social:function() {
+		social: function () {
 			return social;
 		},
-		data: function(params, id) {
-			if (id==undefined) {
-				id="";
+		data: function (params, id) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoints="/taxonomy/data/"+id;
+			var endpoints = "/taxonomy/data/" + id;
 			return DeApi.get(endpoints, params);
 		},
 		//v0.3.8
-		update: function(id, data, language, remove_data, add_data) {
-			var endpoints="/taxonomy/data/"+id;
-			var putData={
-				"data":data
+		update: function (id, data, language, remove_data, add_data) {
+			var endpoints = "/taxonomy/data/" + id;
+			var putData = {
+				"data": data
 			};
-			if (language !==undefined) {
-				putData.language=language;
+			if (language !== undefined) {
+				putData.language = language;
 			}
-			if (remove_data !==undefined && remove_data !==null) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		},
-		create:function(type,data) {
-			var endpoints="/taxonomy/data/";
+		create: function (type, data) {
+			var endpoints = "/taxonomy/data/";
 			if (!data.hasOwnProperty("type")) {
-				data.type=type;
+				data.type = type;
 			}
-			var postData={
-				"data":data
+			var postData = {
+				"data": data
 			}
 			return DeApi.post(endpoints, postData);
 		},
-		remove:function(id) {
-			var endpoints="/taxonomy/data/"+id;
+		remove: function (id) {
+			var endpoints = "/taxonomy/data/" + id;
 			return DeApi.delete(endpoints);
 		}
 	}
 });
 // v0.4.5
-de.factory('DeLocations', function(DeApi) {
+de.factory('DeLocations', function (DeApi) {
 	return {
-		data:function(params, id) {
-			if (id==undefined) {
-				id="";
+		data: function (params, id) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoints="/locations/data/"+id;
+			var endpoints = "/locations/data/" + id;
 			return DeApi.get(endpoints, params);
 		}, //v0.4.7
-		update:function(id,data, language, remove_data, add_data) {
-			var endpoints="/locations/data/"+id;
-			var putData={
-				"data":data
+		country: function (path, params) {
+			var endpoints = "/locations/country/" + path;
+			return DeApi.get(endpoints, params);
+		},//v0.5.1
+		update: function (id, data, language, remove_data, add_data) {
+			var endpoints = "/locations/data/" + id;
+			var putData = {
+				"data": data
 			};
-			if (language !==undefined && language !="english") {
-				putData.language=language;
+			if (language !== undefined && language != "english") {
+				putData.language = language;
 			}
-			if (remove_data !==undefined && remove_data !==null) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		}
 	}
 });
 // v0.4.8
-de.factory('DeCollectors', function(DeApi) {
+de.factory('DeCollectors', function (DeApi) {
 	return {
-		data:function(params, id) {
-			if (id==undefined) {
-				id="";
+		data: function (params, id) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoints="/collector/data/"+id;
+			var endpoints = "/collector/data/" + id;
 			return DeApi.get(endpoints, params);
 		},
-		create:function(data, estate_id) {
-			var endpoints="/collector/data/";
-			var postData={
-				"data":data
+		create: function (data, estate_id) {
+			var endpoints = "/collector/data/";
+			var postData = {
+				"data": data
 			}
-			if (estate_id!==undefined) {
-				postData.estate_id=estate_id;
+			if (estate_id !== undefined) {
+				postData.estate_id = estate_id;
 			}
 			return DeApi.post(endpoints, postData);
-		}, 
-		update:function(id,data,language,remove_data,add_data) {
-			var endpoints="/collector/data/"+id;
-			var putData={
-				"data":data
+		},
+		update: function (id, data, language, remove_data, add_data) {
+			var endpoints = "/collector/data/" + id;
+			var putData = {
+				"data": data
 			};
-			if (language !==undefined && language !="english") {
-				putData.language=language;
+			if (language !== undefined && language != "english") {
+				putData.language = language;
 			}
-			if (remove_data !==undefined && remove_data !==null) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		}
 	}
 });
 // v0.2.4: Multimedia Merge
-de.factory('DeMultimedia', function(DeApi, $http) {
-	var multimedia=[];
+de.factory('DeMultimedia', function (DeApi, $http) {
+	var multimedia = [];
 	return {
-		data: function(estate, params) {
-			if (estate==undefined) {
-				estate="";
+		data: function (estate, params) {
+			if (estate == undefined) {
+				estate = "";
 			}
-			var endpoints="/multimedia/"+estate;
+			var endpoints = "/multimedia/" + estate;
 			return DeApi.get(endpoints, params);
 		},
-		update:function(estate, data, remove_data, add_data) {
-			var endpoints="/multimedia/"+estate;
-			var putData={
-				"data":data
+		update: function (estate, data, remove_data, add_data) {
+			var endpoints = "/multimedia/" + estate;
+			var putData = {
+				"data": data
 			};
-			if (remove_data !==undefined && remove_data !==null) {
-				putData.remove=remove_data;
+			if (remove_data !== undefined && remove_data !== null) {
+				putData.remove = remove_data;
 			}
-			if (add_data !==undefined && add_data !== null) {
-				putData.add=add_data;
+			if (add_data !== undefined && add_data !== null) {
+				putData.add = add_data;
 			}
 			return DeApi.put(endpoints, putData);
 		},
-		upload: function(estate, file, uploadEventHandlers, meta) {
+		upload: function (estate, file, uploadEventHandlers, meta) {
 			//Construct file.
-			var endpoints="/multimedia/"+estate;
+			var endpoints = "/multimedia/" + estate;
 			var fd = new FormData();
 			fd.append("file", file, file.name);
 			fd.append("estate", estate);
 			//v0.3.3
-			if (meta!==undefined) {
+			if (meta !== undefined) {
 				for (var m in meta) {
 					fd.append(m, meta[m]);
 				}
 			}
-			var rh={"Content-Type":undefined};
-			if (DeApi.authType=="api-key") {
-				rh["API-KEY"]=DeApi.apiKey
+			var rh = { "Content-Type": undefined };
+			if (DeApi.authType == "api-key") {
+				rh["API-KEY"] = DeApi.apiKey
 			}
-			else if (DeApi.authType=="token") {
-				rh["Authorization"]="Bearer "+DeApi.oauthData.token;
+			else if (DeApi.authType == "token") {
+				rh["Authorization"] = "Bearer " + DeApi.oauthData.token;
 			}
-			var httpRequest={
-				url:DeApi.apiUrl+endpoints,
-				method:"POST",
+			var httpRequest = {
+				url: DeApi.apiUrl + endpoints,
+				method: "POST",
 				data: fd,
 				headers: rh,
-				transformRequest:function(data,header) {
+				transformRequest: function (data, header) {
 					return data;
 				}
 			};
-			if (uploadEventHandlers !==undefined && uploadEventHandlers !="") {
-				httpRequest.uploadEventHandlers=uploadEventHandlers;
+			if (uploadEventHandlers !== undefined && uploadEventHandlers != "") {
+				httpRequest.uploadEventHandlers = uploadEventHandlers;
 			}
 			return $http(httpRequest);
 		},
-		remove: function(estate, id) {
-			var endpoints="/multimedia/"+estate+"/"+id;
+		remove: function (estate, id) {
+			var endpoints = "/multimedia/" + estate + "/" + id;
 			return DeApi.delete(endpoints);
 		},
-		loadLast: function() {
+		loadLast: function () {
 			//TODO: Use Promise
 			return multimedia;
 		}
 	}
 });
 // v0.1.2: HELPER
-de.factory('DeHelper', function() {
+de.factory('DeHelper', function () {
 	function removeEmpty(jsonOriginal) {
-		if (jsonOriginal===undefined) {
+		if (jsonOriginal === undefined) {
 			return null;
 		}
 		else {
-			var jsonData=JSON.parse(JSON.stringify(jsonOriginal));
+			var jsonData = JSON.parse(JSON.stringify(jsonOriginal));
 			if (!isEmpty(jsonData)) {
 				switch (getType(jsonData)) {
 					case "Array":
 						for (var k in jsonData) {
 							if (isEmpty(jsonData[k], true)) {
-								jsonData=jsonData.splice(k, 1);
+								jsonData = jsonData.splice(k, 1);
 							}
 							else {
-								jsonData[k]=removeEmpty(jsonData[k]);
-								if (jsonData[k]==undefined || jsonData[k]===null) {
+								jsonData[k] = removeEmpty(jsonData[k]);
+								if (jsonData[k] == undefined || jsonData[k] === null) {
 									jsonData.splice(k, 1);
 								}
 							}
@@ -676,8 +690,8 @@ de.factory('DeHelper', function() {
 								delete jsonData[k];
 							}
 							else {
-								jsonData[k]=removeEmpty(jsonData[k]);
-								if (jsonData[k]==undefined || jsonData[k]===null) {
+								jsonData[k] = removeEmpty(jsonData[k]);
+								if (jsonData[k] == undefined || jsonData[k] === null) {
 									delete jsonData[k];
 								}
 							}
@@ -697,47 +711,47 @@ de.factory('DeHelper', function() {
 		}
 	}
 	function isEmpty(jsonObj, testString) {
-		var empty=false;
-		if (typeof testString=='undefined') {
-			testString=true;
+		var empty = false;
+		if (typeof testString == 'undefined') {
+			testString = true;
 		}
 		else {
-			testString=false;
+			testString = false;
 		}
-		switch(getType(jsonObj)) {
+		switch (getType(jsonObj)) {
 			case "Array":
-				if (jsonObj.length <=0) {
-					empty=true;
+				if (jsonObj.length <= 0) {
+					empty = true;
 				}
 				else {
-					empty=true;
+					empty = true;
 					for (var a in jsonObj) {
 						if (!isEmpty(jsonObj[a])) {
-							empty=false;
+							empty = false;
 						}
 					}
 				}
 				break;
 			case "Object":
 				if (Object.keys(jsonObj).length <= 0) {
-					empty=true;
+					empty = true;
 				}
 				break;
 			case "String":
-				if (testString && jsonObj=="") {
-					empty=true;
+				if (testString && jsonObj == "") {
+					empty = true;
 				}
 				break;
 			default:
-				if (typeof jsonObj=='undefined') {
-					empty=true;
+				if (typeof jsonObj == 'undefined') {
+					empty = true;
 				}
 				break;
 		}
 		return empty;
 	}
 	function getType(data) {
-		var typeString=Object.prototype.toString.call(data);
+		var typeString = Object.prototype.toString.call(data);
 		if (typeString !== undefined) {
 			return typeString.replace("[object ", "").replace("]", "");
 		}
@@ -747,15 +761,15 @@ de.factory('DeHelper', function() {
 	}
 	//Model editor
 	function addItem(childScope, fieldKey, atStart, defaultItem) {
-		var newObj={};
-		if (defaultItem !==undefined) {
-			newObj=defaultItem;
+		var newObj = {};
+		if (defaultItem !== undefined) {
+			newObj = defaultItem;
 		}
-		if (fieldKey!==undefined && fieldKey!=="") {
+		if (fieldKey !== undefined && fieldKey !== "") {
 			if (!childScope.hasOwnProperty(fieldKey)) {
-				childScope[fieldKey]=[];
+				childScope[fieldKey] = [];
 			}
-			if (atStart==true) {
+			if (atStart == true) {
 				childScope[fieldKey].unshift(newObj);
 			}
 			else {
@@ -764,7 +778,7 @@ de.factory('DeHelper', function() {
 			}
 		}
 		else {
-			if (atStart==true) {
+			if (atStart == true) {
 				childScope.unshift(newObj);
 			}
 			else {
@@ -773,11 +787,11 @@ de.factory('DeHelper', function() {
 		}
 	}
 	function copyItem(childScope, itemIndex, objectScope) {
-		var newObject=angular.copy(objectScope);
+		var newObject = angular.copy(objectScope);
 		if (newObject.hasOwnProperty("id")) {
-			newObject.id=newObject.id+"-copy";
+			newObject.id = newObject.id + "-copy";
 		}
-		if (typeof itemIndex ==='undefined' || itemIndex=="null") {
+		if (typeof itemIndex === 'undefined' || itemIndex == "null") {
 			childScope.splice(0, 0, newObject);
 		}
 		else {
@@ -785,7 +799,7 @@ de.factory('DeHelper', function() {
 		}
 	}
 	function removeItem(childScope, itemIndex, fieldKey) {
-		if (typeof itemIndex ==='undefined' || itemIndex=="null") {
+		if (typeof itemIndex === 'undefined' || itemIndex == "null") {
 			if (fieldKey !== undefined) {
 				childScope[fieldKey].splice(0);
 			}
@@ -795,60 +809,60 @@ de.factory('DeHelper', function() {
 		}
 		else {
 			if (fieldKey !== undefined) {
-				childScope[fieldKey].splice(itemIndex,1);
+				childScope[fieldKey].splice(itemIndex, 1);
 			}
 			else {
-				childScope.splice(itemIndex,1);
+				childScope.splice(itemIndex, 1);
 			}
 		}
 	}
 	function addObject(childScope, fieldKey, itemType, objectId) {
-		if (objectId==undefined) {
-			var idPrefix=(fieldKey==undefined) ? "temp":fieldKey;
-			objectId=getTempId(fieldKey);
+		if (objectId == undefined) {
+			var idPrefix = (fieldKey == undefined) ? "temp" : fieldKey;
+			objectId = getTempId(fieldKey);
 		}
-		if (fieldKey!==undefined) {
+		if (fieldKey !== undefined) {
 			if (!childScope.hasOwnProperty(fieldKey)) {
-				childScope[fieldKey]={};
+				childScope[fieldKey] = {};
 			}
-			while(childScope[fieldKey].hasOwnProperty(objectId)) {
-				objectId=getTempId(idPrefix);
+			while (childScope[fieldKey].hasOwnProperty(objectId)) {
+				objectId = getTempId(idPrefix);
 			}
-			if (itemType=="Array") {
-				childScope[fieldKey][objectId]=[];
+			if (itemType == "Array") {
+				childScope[fieldKey][objectId] = [];
 			}
 			else {
-				childScope[fieldKey][objectId]={};
+				childScope[fieldKey][objectId] = {};
 			}
 		}
 		else {
-			while(childScope.hasOwnProperty(objectId)) {
-				objectId=getTempId(idPrefix);
+			while (childScope.hasOwnProperty(objectId)) {
+				objectId = getTempId(idPrefix);
 			}
-			if (itemType=="Array") {
-				childScope[objectId]=[];
+			if (itemType == "Array") {
+				childScope[objectId] = [];
 			}
 			else {
-				childScope[objectId]={};
+				childScope[objectId] = {};
 			}
 		}
 	}
 	return {
-		inArray:function(item, array, compare_key) {
-			if (array==undefined) {
+		inArray: function (item, array, compare_key) {
+			if (array == undefined) {
 				return false;
 			}
 			else {
-				if (Array.isArray(item)){
+				if (Array.isArray(item)) {
 					for (var i in array) {
 						for (var j in item) {
-							if (item[j]==array[i]) {
+							if (item[j] == array[i]) {
 								return true;
 							}
 						}
 					}
 				}
-				else if (typeof item=="object")  {
+				else if (typeof item == "object") {
 					//var same=false;
 					for (var i in array) {
 						if (angular.equals(array[i], item)) {
@@ -860,7 +874,7 @@ de.factory('DeHelper', function() {
 				else {
 					if (compare_key !== undefined) {
 						for (var i in array) {
-							if (array[i][compare_key]==item) {
+							if (array[i][compare_key] == item) {
 								return true;
 							}
 						}
@@ -869,8 +883,12 @@ de.factory('DeHelper', function() {
 				}
 			}
 		},
-		getQueryParameter:function(str) {
-			var queryDoc=document.location.search.replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+		getQueryParameter: function (str) {
+			var locationSearch = document.location.search.replace(/(^\?)/, '');
+			if (locationSearch == "") {
+				return {};
+			}
+			var queryDoc = locationSearch.split("&").map(function (n) { return n = n.split("="), this[n[0]] = n[1], this }.bind({}))[0];
 			if (str === undefined) {
 				return queryDoc;
 			}
@@ -878,48 +896,48 @@ de.factory('DeHelper', function() {
 				return queryDoc[str];
 			}
 		}, //v0.2.9
-		getURLPaths:function(index) {
-			var urlPaths=window.location.pathname.split("/");
+		getURLPaths: function (index) {
+			var urlPaths = window.location.pathname.split("/");
 			urlPaths.shift(); //Remove the front, as it's always ""
-			if (index==-1) { //Get last non empty element
-				var elem=urlPaths.pop();
-				if (elem=="") {
-					elem=urlPaths.pop();
+			if (index == -1) { //Get last non empty element
+				var elem = urlPaths.pop();
+				if (elem == "") {
+					elem = urlPaths.pop();
 				}
 				return elem;
 			}
-			else if (index !==undefined) {
+			else if (index !== undefined) {
 				return urlPaths[index];
 			}
 			else {
 				return urlPaths;
 			}
 		},
-		getDiff: function(json1, json2, includeDelete) {
-			var changed={};
-			var removed={};
-			if (getType(json2)=="Array") {
-				changed=[];
+		getDiff: function (json1, json2, includeDelete) {
+			var changed = {};
+			var removed = {};
+			if (getType(json2) == "Array") {
+				changed = [];
 			}
-			if (typeof json2 == 'object' && typeof json1=='object' && !angular.equals(json1, json2)) {
+			if (typeof json2 == 'object' && typeof json1 == 'object' && !angular.equals(json1, json2)) {
 				var newJson = angular.copy(json2);
 				for (var key in newJson) {
 					if (!json1.hasOwnProperty(key) || !angular.equals(json1[key], newJson[key])) {
-						newJson[key]=removeEmpty(newJson[key]);
-						if (newJson[key]!==null) {
-							changed[key]=newJson[key];
+						newJson[key] = removeEmpty(newJson[key]);
+						if (newJson[key] !== null) {
+							changed[key] = newJson[key];
 						}
 					}
 				}
-				if (includeDelete==true) {
+				if (includeDelete == true) {
 					for (var okey in json1) {
-						if (!newJson.hasOwnProperty(okey) || newJson[okey]==null) {
-							removed[okey]="";
+						if (!newJson.hasOwnProperty(okey) || newJson[okey] == null) {
+							removed[okey] = "";
 						}
 					}
 					return {
-						"changed":changed,
-						"removed":removed
+						"changed": changed,
+						"removed": removed
 					};
 				}
 				else {
@@ -932,29 +950,30 @@ de.factory('DeHelper', function() {
 		},
 		isEmpty: isEmpty,
 		model: { //0.2.5
-			addItem:addItem,
-			copyItem:copyItem,
-			removeItem:removeItem,
-			addObject:addObject
+			addItem: addItem,
+			copyItem: copyItem,
+			removeItem: removeItem,
+			addObject: addObject
 		}
 	}
 });
 // v0.2.2: Require CATEGORY ICONS
-de.provider('DeIcons', function() {
-	this.categoryURL="http://warehouse.dataestate.com.au/DE/categories/";
+de.provider('DeIcons', function () {
+	this.categoryURL = "http://warehouse.dataestate.com.au/DE/categories/";
 	//Config
-	this.setCategoryURL=function(catURL) {
-		this.categoryURL=catURL;
+	this.setCategoryURL = function (catURL) {
+		this.categoryURL = catURL;
 	};
-	this.$get=function() {
-		this.categoryIcon=function(categoryString) {
-			if (categoryString !==undefined) {
-				return this.categoryURL+categoryString+".svg";
+	this.$get = function () {
+		this.categoryIcon = function (categoryString) {
+			if (categoryString !== undefined) {
+				return this.categoryURL + categoryString + ".svg";
 			}
 		}
 		return this;
 	}
 });
+
 //DIRECTIVES
 /**
 * deLink:
@@ -964,42 +983,42 @@ de.provider('DeIcons', function() {
 * the de-link-action attribute is used to identify what function to call.
 */
 //DE-LINK FORMAT CHANGED! Won't work with md-button
-de.directive('deLink', function() {
+de.directive('deLink', function () {
 	return {
 		scope: {
-			deLink:'=?deLink',
-			apiAction:'&?deApiAction',
-			internalAction:'&?deInternalAction',
-			linkOptions:'=?deLinkOptions'
+			deLink: '=?deLink',
+			apiAction: '&?deApiAction',
+			internalAction: '&?deInternalAction',
+			linkOptions: '=?deLinkOptions'
 		},
-		transclude:'element',
-		link: function(scope, element, attrs, mdb) {
-			var boundScope=scope.deLink;
-			if (scope.deLink.type !==undefined) {
-				if (scope.deLink.type=="api") {
-					element.on('click', function() {
+		transclude: 'element',
+		link: function (scope, element, attrs, mdb) {
+			var boundScope = scope.deLink;
+			if (scope.deLink.type !== undefined) {
+				if (scope.deLink.type == "api") {
+					element.on('click', function () {
 						scope.apiAction(
 							{
-								"$elem":element,
-								"endpoints":scope.deLink.endpoints,
-								"params":scope.deLink.params
+								"$elem": element,
+								"endpoints": scope.deLink.endpoints,
+								"params": scope.deLink.params
 							});
 					});
 				}
-				else if (scope.deLink.type=="internal") {
-					element.on('click', function() {
+				else if (scope.deLink.type == "internal") {
+					element.on('click', function () {
 						scope.internalAction(
 							{
-								"$elem":element,
-								"link":scope.deLink.link
+								"$elem": element,
+								"link": scope.deLink.link
 							});
 					});
 				}
 				else {
-					if (scope.linkOptions!==undefined) {
-						if (scope.linkOptions.targets !==undefined) {
+					if (scope.linkOptions !== undefined) {
+						if (scope.linkOptions.targets !== undefined) {
 							for (var typeKey in scope.linkOptions.targets) {
-								if(typeKey==scope.deLink.type) {
+								if (typeKey == scope.deLink.type) {
 									element.attr("target", scope.linkOptions.targets[typeKey]);
 								}
 							}
@@ -1011,51 +1030,51 @@ de.directive('deLink', function() {
 		}
 	}
 });
-de.directive('deJson', function($parse) {
+de.directive('deJson', function ($parse) {
 	return {
-		restrict:'A',
-		scope:{
-			jsonValue:"=deJson"
+		restrict: 'A',
+		scope: {
+			jsonValue: "=deJson"
 		},
-		link: function(scope, element, attrs) {
-			if (scope.jsonValue !==undefined) {
+		link: function (scope, element, attrs) {
+			if (scope.jsonValue !== undefined) {
 				var jsonText = JSON.stringify(scope.jsonValue);
 				element.text(jsonText);
 			}
-			element.on('change', function(ev) {
-				scope.$apply(function() {
+			element.on('change', function (ev) {
+				scope.$apply(function () {
 					try {
-						scope.jsonValue=JSON.parse(ev.currentTarget.value);
+						scope.jsonValue = JSON.parse(ev.currentTarget.value);
 					}
 					catch (e) {
-						alert(ev.currentTarget.value+" is not a valid JSON string. Changes not saved.");
+						alert(ev.currentTarget.value + " is not a valid JSON string. Changes not saved.");
 					}
 				});
 			});
 		}
 	}
 });
-de.directive('deDateModel', function() {
+de.directive('deDateModel', function () {
 	return {
-		restrict:'A',
+		restrict: 'A',
 		scope: {
-			dateObj:"=deDateModel"
+			dateObj: "=deDateModel"
 		},
-		link: function(scope, element, attrs) {
-			if (scope.dateObj !==undefined) {
-				if (typeof scope.dateObj=="string") {
-					var dateString=scope.dateObj.split("+")[0];
+		link: function (scope, element, attrs) {
+			if (scope.dateObj !== undefined) {
+				if (typeof scope.dateObj == "string") {
+					var dateString = scope.dateObj.split("+")[0];
 					element.val(dateString);
 				}
 				else {
-					var jsString=scope.dateObj.toISOString().split("Z")[0];
+					var jsString = scope.dateObj.toISOString().split("Z")[0];
 					element.val(jsString);
 				}
 			}
-			element.on('change', function(ev) {
-				scope.$apply(function() {
-					if (element.val()!="") {
-						scope.dateObj=element.val();
+			element.on('change', function (ev) {
+				scope.$apply(function () {
+					if (element.val() != "") {
+						scope.dateObj = element.val();
 					}
 				})
 			});
@@ -1063,45 +1082,45 @@ de.directive('deDateModel', function() {
 	}
 });
 de.directive('ngEnter', function () {
-  return function (scope, element, attrs) {
-    element.bind("keydown keypress", function (event) {
-        if(event.which === 13) {
-            scope.$apply(function (){
-                scope.$eval(attrs.ngEnter);
-            });
+	return function (scope, element, attrs) {
+		element.bind("keydown keypress", function (event) {
+			if (event.which === 13) {
+				scope.$apply(function () {
+					scope.$eval(attrs.ngEnter);
+				});
 
-            event.preventDefault();
-        }
-    });
+				event.preventDefault();
+			}
+		});
 	};
 });
-de.directive('deAnimateEnd', function($animate) {
+de.directive('deAnimateEnd', function ($animate) {
 	return {
 		scope: {
-			deAnimateEnd:'&'
+			deAnimateEnd: '&'
 		},
-		link:function(scope,element,attr) {
-			$animate.on('leave', element, function() {
-				scope.deAnimateEnd({'$scope':scope,'$element':element});
+		link: function (scope, element, attr) {
+			$animate.on('leave', element, function () {
+				scope.deAnimateEnd({ '$scope': scope, '$element': element });
 			});
 		}
 	}
 });
 //v0.2.8 Immitation of angular-material tooltip
-de.directive('deTooltip', function($document) {
+de.directive('deTooltip', function ($document) {
 	return {
-		link: function(scope, element, attrs) {
-			var parentElem=element.parent();
-			var styles=[
-				"position:absolute","z-index:100000"
+		link: function (scope, element, attrs) {
+			var parentElem = element.parent();
+			var styles = [
+				"position:absolute", "z-index:100000"
 			];
 			element.addClass("de-tooltip");
-			var styleString=styles.join(";");
-			element.parent().on('mouseover', function(e) {
+			var styleString = styles.join(";");
+			element.parent().on('mouseover', function (e) {
 				element.attr("style", styleString);
 				element.appendTo(parentElem.parent());
 			});
-			element.parent().on('mouseout', function() {
+			element.parent().on('mouseout', function () {
 				element.remove();
 			});
 			element.remove();
@@ -1109,50 +1128,50 @@ de.directive('deTooltip', function($document) {
 	}
 });
 //v0.4.6 - require dataEstateUI.css
-de.directive('deImgCredit', function() {
+de.directive('deImgCredit', function () {
 	return {
-		restrict:'A',
+		restrict: 'A',
 		scope: {
-			creditText:'=?deImgCredit', 
-			customClass:'@?deCreditClass'
+			creditText: '=?deImgCredit',
+			customClass: '@?deCreditClass'
 		},
-		link: function(scope, element, attrs) {
-			if (scope.creditText!==undefined && scope.creditText !="") {
-				var styleClass='';
-				styleClass=scope.customClass ? ' '+scope.customClass:'';
-				var creditHtml='<div class="de-img-credit'+styleClass+'">'+scope.creditText+'</div>';
+		link: function (scope, element, attrs) {
+			if (scope.creditText !== undefined && scope.creditText != "") {
+				var styleClass = '';
+				styleClass = scope.customClass ? ' ' + scope.customClass : '';
+				var creditHtml = '<div class="de-img-credit' + styleClass + '">' + scope.creditText + '</div>';
 				element.parent().append(creditHtml);
 			}
 		}
 	}
 });
 //v0.4 - Added min length and onSelect function
-de.directive('jqAutocomplete', function() {
+de.directive('jqAutocomplete', function () {
 	return {
-		require:"ngModel",
+		require: "ngModel",
 		scope: {
-			source:"=jqAutoSource",
-			onCreate:"&?jqOnCreate",
-			onSelect:"&?jqOnSelect",
-			onFocus:"&?jqOnFocus",
-			jqShowfield:"=",
-			minLength:"=jqMinLength"
+			source: "=jqAutoSource",
+			onCreate: "&?jqOnCreate",
+			onSelect: "&?jqOnSelect",
+			onFocus: "&?jqOnFocus",
+			jqShowfield: "=",
+			minLength: "=jqMinLength"
 		},
-		link: function(scope,element,attrs, modelCtrl) {
+		link: function (scope, element, attrs, modelCtrl) {
 			element.autocomplete({
-				minLength:(scope.minLength===undefined || isNaN(scope.minLength)) ? 2:scope.minLength,
-				source:scope.source,
-				create:function(event, ui) {
-					if (scope.onCreate !==undefined) {
-						scope.onCreate({'$event':event, 'element':element});
+				minLength: (scope.minLength === undefined || isNaN(scope.minLength)) ? 2 : scope.minLength,
+				source: scope.source,
+				create: function (event, ui) {
+					if (scope.onCreate !== undefined) {
+						scope.onCreate({ '$event': event, 'element': element });
 					}
 				},
-				focus:function(event,ui) {
+				focus: function (event, ui) {
 					event.preventDefault();
 					element.val(ui.item ? ui.item.label : "");
 					//scope.onFocus({'$event':event, '$ui':ui});
 				},
-				select: function(event,ui) {
+				select: function (event, ui) {
 					event.preventDefault();
 					modelCtrl.$setViewValue(ui.item.value);
 					element.val(ui.item ? ui.item.label : "");
@@ -1161,13 +1180,13 @@ de.directive('jqAutocomplete', function() {
 					} else {
 						element.val(ui.item ? ui.item.label : "");
 					}
-					if (scope.onSelect !==undefined && typeof scope.onSelect=="function") {
-						scope.onSelect({'$event':event, '$ui':ui});
+					if (scope.onSelect !== undefined && typeof scope.onSelect == "function") {
+						scope.onSelect({ '$event': event, '$ui': ui });
 					}
 				},
-				change: function(event, ui) {
+				change: function (event, ui) {
 					event.preventDefault();
-					if (ui.item===null) {
+					if (ui.item === null) {
 						element.val("");
 						modelCtrl.$setViewValue(null);
 					}
@@ -1176,122 +1195,630 @@ de.directive('jqAutocomplete', function() {
 					}
 				}
 			})
-			.data("ui-autocomplete")._renderItem=function(ul, item) {
-				var newText = String(item.label).replace(
-                new RegExp(this.term, "ig"),
-               '<span class="ui-autocomplete-highlight">'+this.term+"</span>");
-				return $('<li class="ui-menu-item"></li>')
-					.data("item.autocomplete", item)
-					.append('<div class="ui-menu-item-wrapper">'+newText+'</div>')
-					.appendTo(ul);
-			}
+				.data("ui-autocomplete")._renderItem = function (ul, item) {
+					var newText = String(item.label).replace(
+						new RegExp(this.term, "ig"),
+						'<span class="ui-autocomplete-highlight">' + this.term + "</span>");
+					return $('<li class="ui-menu-item"></li>')
+						.data("item.autocomplete", item)
+						.append('<div class="ui-menu-item-wrapper">' + newText + '</div>')
+						.appendTo(ul);
+				}
 		}
 	}
 });
 //v0.3.4
-de.directive('deCurrency', function() {
+de.directive('deCurrency', function () {
 	return {
-		restrict:'E',
-		scope:{
-			money:'=ngModel'
+		restrict: 'E',
+		scope: {
+			money: '=ngModel'
 		},
-		link:function(scope,elem, attrs) {
-			scope.editing=false;
-			scope.toggleEdit=function(isEditing) {
-				scope.editing=isEditing;
+		link: function (scope, elem, attrs) {
+			scope.editing = false;
+			scope.toggleEdit = function (isEditing) {
+				scope.editing = isEditing;
 			}
 		},
-		template:'<input type="number" ng-model="money" ng-show="editing" ng-blur="toggleEdit(false)"><span ng-bind="money | currency" ng-hide="editing" ng-click="toggleEdit(true)"></span>'
+		template: '<input type="number" ng-model="money" ng-show="editing" ng-blur="toggleEdit(false)"><span ng-bind="money | currency" ng-hide="editing" ng-click="toggleEdit(true)"></span>'
+	}
+});
+
+//v0.5
+/**
+ * Custom built search input container. Requires an <input> with de-search-bar as attribute. 
+ * Attributes:
+ * location-label-alias (string) - Title for the location search result. Default is Location
+ * estate-label-alias (string) - Title for the estate search result. Default is Estate
+ * keyword-label-alias (string) - Title for the keyword search result. Default is Keyword
+ * estate-url (string) - The base url to link to the estate detail view.
+ */
+de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope) {
+	return {
+		scope: {
+			locationLabel: "@?locationLabelAlias",
+			estateLabel: "@?estateLabelAlias",
+			keywordLabel: "@?keywordLabelAlias",
+			estateUrl: "@?estateUrl",
+			showState: "=?"
+		},
+		transclude: true,
+		controller: ["$scope", "$element", function DeSearchController($scope, $element) {
+			var vm = this;
+			//Init
+			this.$onInit = function () {
+				vm.name = $scope.name;
+				vm.searchText = "";
+				vm.searchEstateOptions = [];
+				vm.searchLocationOptions = [];
+
+				vm.searchRegion = false;
+				vm.searchLocality = false;
+				vm.searchState = false;
+
+				$scope.popupOpen = false;
+				$scope.showLocationSearch = false;
+				$scope.showEstateSearch = false;
+
+				$scope.showState = $scope.showState === undefined ? true : $scope.showState;
+
+				var searchEstatePromise = false;
+				var searchLocationPromise = false;
+				//Set defaults
+				vm.locationLabel = $scope.locationLabel !== undefined ? $scope.locationLabel : "Location";
+				vm.estateLabel = $scope.estateLabel !== undefined ? $scope.estateLabel : "Estate";
+				vm.keywordLabel = $scope.keywordLabel !== undefined ? $scope.keywordLabel : "Keyword";
+				vm.estateUrl = $scope.estateUrl !== undefined ? $scope.estateUrl : "/detail/";
+			}
+			this.$postLink = function () {
+				//Decide which searches are available
+				vm.searchModes = [];
+				vm.searchParams = {};
+				if ($scope.searchControl.searchModes !== undefined) {
+					vm.searchModes = $scope.searchControl.searchModes.split("|");
+				}
+				if ($scope.searchControl.defaultFilters !== undefined) {
+					vm.searchParams = $scope.searchControl.defaultFilters;
+				}
+			}
+			//Set the child search bar. 
+			vm.setSearchControl = function (searchControl) {
+				$scope.searchControl = searchControl;
+			}
+			vm.searchChanged = function (newSearch, oldSearch) {
+				vm.searchType = "";
+				//Don't do search if empty or if there has been no changes. Clear everything
+				if (newSearch == "") {
+					vm.searchText = "";
+					$scope.searchControl.searchText = ""; //Updates the child search bar. 
+
+					vm.searchText = "";
+					vm.searchLocality = false;
+					vm.searchRegion = false;
+					vm.searchState = false;
+					return;
+				}
+				if (vm.searchText == newSearch) { return; }
+				vm.searchText = newSearch;
+				vm.searchType = vm.keywordLabel;
+				$scope.popupOpen = true;
+				if (vm.searchModes.length <= 0 || vm.searchModes.includes("LOCATION")) {
+					doLocationSearch();
+				}
+				if (vm.searchModes.length <= 0 || vm.searchModes.includes("ESTATE")) {
+					doEstateSearch();
+				}
+				//TODO: Search modes. 
+			}
+			function doEstateSearch() {
+				//Setup search estates. 
+				vm.searchParams.name = vm.searchText;
+				if (vm.searchParams.fields == undefined) {
+					vm.searchParams.fields = "id,name";
+				}
+				if (vm.searchParams.size == undefined) {
+					vm.searchParams.size = 5;
+				}
+				searchEstatePromise = DeEstates.data(vm.searchParams)
+					.then(function (response) {
+						searchEstatePromise = false;
+						vm.searchEstateOptions = [];
+						for (var i = 0; i < Math.min(5, response.data.length); i++) {
+							vm.searchEstateOptions.push({
+								label: response.data[i].name,
+								estateId: response.data[i].id
+							});
+						}
+						$scope.showEstateSearch = true;
+					}, function (error) { });
+			}
+			function doLocationSearch() {
+				$scope.searchControl.searchLocality = false;
+				$scope.searchControl.searchRegion = false;
+				$scope.searchControl.searchState = false;
+				//Setup search locations. 
+				searchLocationPromise = DeLocations.data({
+					name: vm.searchText,
+					fields: 'id,name,state_code,type',
+					types: 'LOCALITY,REGION,STATE'
+				}, 'data').then(function (response) {
+					searchLocationPromise = false; //cleanup
+					vm.searchLocationOptions = [];
+					var j = 0;
+					for (var i = 0; i < response.data.length && j < 5; i++) {
+						if (!('state_code' in response.data[i])) { continue; }
+						if (response.data[i].type == "STATE") {
+							vm.searchLocationOptions.push({
+								label: response.data[i].name,
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
+							});
+						}
+						else if (response.data[i].type == "REGION") {
+							vm.searchLocationOptions.push({
+								label: response.data[i].name + ' (Region), ' + response.data[i].state_code,
+								region: response.data[i].name,
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
+							});
+						}
+						else {
+							vm.searchLocationOptions.push({
+								label: response.data[i].name + ', ' + response.data[i].state_code,
+								locality: response.data[i].name,
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
+							});
+						}
+						j++;
+					}
+					$scope.showLocationSearch = true;
+				}, function (error) { console.log(error) });
+			}
+			vm.searchLocationClicked = function (location) {
+				if ($scope.showState != false) {
+					$scope.searchControl.searchText = location.label; //Updates the child search bar. 
+					vm.searchText = location.label;
+				}
+				else if (location.type == "REGION") {
+					$scope.searchControl.searchText = location.region;
+					vm.searchText = location.region;
+				}
+				else {
+					$scope.searchControl.searchText = location.locality;
+					vm.searchText = location.locality;
+				}
+				$scope.searchControl.searchLocality = location.locality;
+				$scope.searchControl.searchState = location.state_code;
+				$scope.searchControl.searchRegion = location.region;
+				$scope.searchControl.searchUpdated();
+
+				vm.searchLocality = location.locality;
+				vm.searchState = location.state_code;
+				vm.searchRegion = location.region;
+
+				vm.searchType = vm.locationLabel.toLowerCase();
+				$scope.showEstateSearch = false;
+				$scope.showLocationSearch = false;
+			}
+			vm.searchKeywordClicked = function () {
+				$scope.searchControl.searchLocality = false;
+				$scope.searchControl.searchState = false;
+				$scope.searchControl.searchRegion = false;
+				$scope.searchControl.searchUpdated();
+				vm.searchLocality = false;
+				vm.searchState = false;
+				vm.searchRegion = false;
+				vm.searchType = vm.keywordLabel.toLowerCase();
+				$scope.showEstateSearch = false;
+				$scope.showLocationSearch = false;
+			}
+		}],
+		controllerAs: 'sc',
+		link: function (scope, element, attr, ownCtrl) {
+			//Track windows click for clickout close event. 
+			var winClickEventConstant = "windowsClicked";
+			window.onclick = function (ev) {
+				$rootScope.$broadcast(winClickEventConstant);
+			}
+			scope.$on(winClickEventConstant, function (ev, data) {
+				if (data) {
+					if (data.$id != ev.currentScope.$id && ev.currentScope.popupOpen) {
+						ev.currentScope.popupOpen = false; //No need to $apply, as previous event would've fired it off. 
+						if (ev.currentScope.searchControl !== undefined && ev.currentScope.searchControl.onClose !== undefined) {
+							var searchScope = {
+								"keyword": ev.currentScope.searchControl.searchText,
+								"locality": ev.currentScope.searchControl.searchLocality,
+								"region": ev.currentScope.searchControl.searchRegion,
+								"state_code": ev.currentScope.searchControl.searchState
+							};
+							ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
+						}
+					}
+				}
+				else {
+					scope.$apply(function () {
+						if (ev.currentScope.popupOpen) {
+							ev.currentScope.popupOpen = false;
+							if (ev.currentScope.searchControl !== undefined && ev.currentScope.searchControl.onClose !== undefined) {
+								var searchScope = {
+									"keyword": ev.currentScope.searchControl.searchText,
+									"locality": ev.currentScope.searchControl.searchLocality,
+									"region": ev.currentScope.searchControl.searchRegion,
+									"state_code": ev.currentScope.searchControl.searchState
+								};
+								ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
+							}
+						}
+					});
+				}
+			});
+		},
+		template: '<div ng-transclude></div><span class="searchinput-type">{{sc.searchType}}</span>' +
+			'<div class="searchinput-dropdown" ng-show="popupOpen">' +
+			'<div class="keyword-search" ng-click="sc.searchKeywordClicked()"><h4>{{sc.keywordLabel}}: </h4><span class="search-term">{{sc.searchText}}</span></div>' +
+			'<div ng-if="showLocationSearch"><h4>{{sc.locationLabel}}</h4>' +
+			'<ul><li ng-repeat="searchOption in sc.searchLocationOptions track by $index" ng-click="sc.searchLocationClicked(searchOption)">' +
+			'<span>{{searchOption.label}}</span>' +
+			'</li></ul>' +
+			'</div>' +
+			'<div ng-if="showEstateSearch"><h4>{{sc.estateLabel}}</h4>' +
+			'<ul><li ng-repeat="searchOption in sc.searchEstateOptions track by $index">' +
+			'<span><a ng-href="{{sc.estateUrl + searchOption.estateId}}">{{searchOption.label}}</a></span>' +
+			'</li></ul>' +
+			'</div>' +
+			'</div>'
+	}
+})
+	/**
+	 * Custom built search input that will search the Data Estate API. This requires the DE API services. Used as an attribute on INPUT
+	 * This requires the parent "de-search" container. 
+	 * search-types (| separated string) - Indicates what search types to enable. 
+	 * 	- KEYWORD (default) - No popup, just does a keyword search to the API. 
+	 *  - ESTATE (default) - Brings up a popup list of estates matching the name. 
+	 *  - LOCATION (default) - Brings up a list of locations. 
+	 * on-submit (function($searchScope)) - Optional. Used for when location is clicked or keyword is clocked.
+	 * 		Returns the $searchScope object, with three properties: keyword, locality and state_code. 
+	 * on-close (function($searchScope)) - Optional. Similar to the above, but fired when the dropdown closes. 
+	 * on-clear (function($searchScope)) - Optional. Fired when the search field is cleared,
+	 * defaul-filters = param object to be applied onto estate search. 
+	 */
+	.directive('deSearchBar', function () {
+		return {
+			restrict: "A",
+			require: "^^?deSearch",
+			scope: {
+				searchModes: "@?",
+				searchText: "=?ngModel",
+				onSubmit: '&?',
+				onClose: '&?',
+				onClear: '&?',
+				defaultFilters: "=?"
+			},
+			link: function (scope, elem, attr, parentCtrl) {
+				parentCtrl.setSearchControl(scope);
+				scope.$watch('searchText', function (newVal, oldVal, curScope) {
+					if (newVal != oldVal) {
+						parentCtrl.searchChanged(newVal, oldVal);
+					}
+					if (newVal == "" && scope.onClear !== undefined) {
+						scope.onClear({
+							"$searchScope": {
+								"keyword": "",
+								"region": false,
+								"locality": false,
+								"state_code": false
+							}
+						});
+					}
+				}, true);
+				scope.searchUpdated = function () {
+					if (scope.onSubmit !== undefined) {
+						var searchScope = {
+							"keyword": scope.searchText,
+							"region": scope.searchRegion,
+							"locality": scope.searchLocality,
+							"state_code": scope.searchState
+						};
+						scope.onSubmit({ "$searchScope": searchScope });
+					}
+				}
+			}
 		}
+	});
+
+//v0.5
+/**
+ * Creates a custom dropdown menu. Used as an element. 
+ * DOM Attributes:
+ * multi (bool | expression) - Indicates whether the selection allows for multiple selection. 
+ * label (expression) - Label of the control. It can be a function. 
+ * options (array | expression) - The source of the dropdown menu. This needs to be an array. 
+ * model (angular scope) - The two-way bound scope for the selected (array or single value), hijects the ng-model. 
+ * label-model (angular scope) - Optional, used to contain selected "label" if the selected value is not sufficient.
+ * label-field (string) - Optional. If the options is an array of objects, indicates which property to use to show in the option's label. 
+ * value-field (string) - Optional. If the options is an array of objects, indicates which property to use to show in the option's value. Also shows what is returned. 
+ * button-text (expression) - Optional. Used for the "Apply" button label. 
+ * on-submit (function($searchScope, $event)) - Optional. Used for when the apply button is clicked. Default is closing the menu.
+ * 		returns the $searchScope object with 2 properties, selectedValue and selectedLabel
+ * on-close (function($searchScope, $event)) - Optional. Similar to on submit, but is fired with the dropdown window is dismissed. 
+ */
+de.directive('deDropdown', function ($rootScope) {
+	return {
+		restrict: 'E',
+		scope: {
+			multiple: '=multi',
+			label: '=label',
+			options: '=options',
+			model: '=ngModel',
+			labelModel: '=?',
+			labelField: '@?',
+			valueField: '@?',
+			buttonText: '=?buttonLabel',
+			onSubmit: '&?',
+			onClose: '&?'
+		},
+		link: function (scope, elem, attr) {
+			scope.popupOpen = false;
+			if (scope.buttonText === undefined) {
+				scope.buttonText = "Apply";
+			}
+			scope.clearButtonText = "Clear";
+			var winClickEventConstant = "windowsClicked";
+			window.onclick = function (ev) {
+				$rootScope.$broadcast(winClickEventConstant);
+			}
+			//Bind custom event
+			scope.$on(winClickEventConstant, function (ev, data) {
+				if (data) {
+					if (data.$id != ev.currentScope.$id && ev.currentScope.popupOpen) {
+						ev.currentScope.popupOpen = false; //No need to $apply, as previous event would've fired it off. 
+						if (ev.currentScope.onClose !== undefined) {
+							var searchScope = {
+								"selectedValue": scope.model,
+								"selectedLabel": scope.labelModel
+							};
+							ev.currentScope.onClose({ "$searchScope": searchScope, "$event": ev });
+						}
+					}
+				}
+				else {
+					scope.$apply(function () {
+						if (ev.currentScope.popupOpen) {
+							ev.currentScope.popupOpen = false;
+							if (ev.currentScope.onClose !== undefined) {
+								var searchScope = {
+									"selectedValue": scope.model,
+									"selectedLabel": scope.labelModel
+								};
+								ev.currentScope.onClose({ "$searchScope": searchScope, "$event": ev });
+							}
+						}
+					});
+				}
+			});
+			//TODO: ADD PARENT ID!!!
+			scope.parentId = attr.id === undefined ? scope.$id : attr.id;
+			//if multi
+			if (scope.model === undefined && scope.multiple) {
+				scope.model = [];
+			}
+			scope.optionClicked = function (optionVal, ev) {
+				if (ev) {
+					ev.stopPropagation();
+				}
+				//For multi
+				var checkedItem = optionVal;
+				if (scope.valueField !== undefined) {
+					checkedItem = optionVal[scope.valueField];
+				}
+				var itemIndex = -1;
+				if (scope.multiple) {
+					var itemIndex = scope.model.indexOf(checkedItem);
+					if (itemIndex >= 0) { //has it. 
+						scope.model.splice(itemIndex, 1);
+					}
+					else {
+						scope.model.push(checkedItem);
+					}
+				}
+				else {
+
+					scope.model = checkedItem;
+					scope.popupOpen = false;
+				}
+				//Label Model (if used)
+				if (scope.labelModel !== undefined) {
+					var labelItem = optionVal;
+					if (scope.labelField !== undefined) {
+						labelItem = optionVal[scope.labelField];
+					}
+					if (scope.multiple) {
+						if (itemIndex >= 0) { //has it. 
+							scope.labelModel.splice(itemIndex, 1);
+						}
+						else {
+							scope.labelModel.push(labelItem);
+						}
+					}
+					else {
+						if (scope.labelField !== undefined) {
+							scope.labelModel = optionVal[scope.labelField];
+						}
+						else {
+							scope.labelModel = labelItem;
+						}
+
+					}
+				}
+				if (!scope.multiple) {
+					//Not Multiple, send submit message. 
+					if (scope.onSubmit !== undefined) {
+						var searchScope = {
+							"selectedValue": scope.model,
+							"selectedLabel": scope.labelModel
+						};
+						scope.onSubmit({ "$searchScope": searchScope, "$event": ev });
+					}
+				}
+			}
+			scope.toggleDropdown = function (ev, open) {
+				if (ev) {
+					ev.stopPropagation();
+					$rootScope.$broadcast("windowsClicked", scope);
+				}
+				scope.togglePopup(open);
+			}
+			scope.togglePopup = function (open) {
+				if (open === undefined) {
+					scope.popupOpen = !scope.popupOpen;
+				}
+				else {
+					scope.popupOpen = open;
+				}
+			}
+			scope.itemInArray = function (haystack, needle) {
+				var needleItem = needle;
+				if (scope.valueField !== undefined) {
+					needleItem = needle[scope.valueField];
+				}
+				if (haystack.indexOf(needleItem) >= 0) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			scope.inputLabel = function (item) {
+				if (scope.labelField !== undefined) {
+					return item[scope.labelField];
+				}
+				else {
+					return item;
+				}
+			}
+			scope.submitSelection = function (ev) {
+				if (scope.onSubmit !== undefined) {
+					if (scope.onSubmit !== undefined) {
+						var searchScope = {
+							"selectedValue": scope.model,
+							"selectedLabel": scope.labelModel
+						};
+						scope.onSubmit({ "$searchScope": searchScope, "$event": ev });
+					}
+				}
+			};
+			scope.clearSelection = function (ev) {
+				if (ev) {
+					ev.stopPropagation();
+				}
+				scope.model = [];
+				if (scope.labelModel !== undefined) {
+					scope.labelModel = [];
+				}
+			}
+			scope.noInvoke = function (ev) {
+				ev.stopPropagation();
+			}
+		},
+		template: '<div class="de-dropdown {{class}}" ng-click="toggleDropdown($event)">{{label}}</div><div class="de-dropdown-menu" ng-show="popupOpen"><ul class="de-dropdown-menu-list">' +
+			'<li ng-repeat="option in options track by $index">' +
+			'<label for="{{parentId}}-{{$index}}" ng-click="noInvoke($event)">' +
+			'<input type="checkbox" name="{{parentId}}-{{$index}}" ng-checked="itemInArray(model, option)" id="{{parentId}}-{{$index}}" ng-show="multiple"' +
+			' ng-click="optionClicked(option, $event)">' +
+			'<span>{{ inputLabel(option) }}</span></label>' +
+			'</li></ul><button type="button" class="de-button btn-clear" ng-click="clearSelection($event)" ng-if="multiple">{{ clearButtonText }}</button>' +
+			'<button type="button" class="de-button" ng-click="submitSelection($selectedScope, $event)">{{ buttonText }}</button></div>'
+	}
 });
 //v0.3.7
-de.factory('DeChangeRegister', function(DeHelper) {
-	var changeSets={};
-	var originals={};
-	var newData={};
-	var trackedScopes={};
+de.factory('DeChangeRegister', function (DeHelper) {
+	var changeSets = {};
+	var originals = {};
+	var newData = {};
+	var trackedScopes = {};
 	function startTracking(setName, dataId, trackData) {
-		if (setName !==undefined && dataId !==undefined && trackData !==undefined) {
-			if (originals[setName]===undefined) {
-				originals[setName]={};
+		if (setName !== undefined && dataId !== undefined && trackData !== undefined) {
+			if (originals[setName] === undefined) {
+				originals[setName] = {};
 			}
-			if (newData[setName]===undefined) {
-				newData[setName]={};
+			if (newData[setName] === undefined) {
+				newData[setName] = {};
 			}
-			originals[setName][dataId]=angular.copy(trackData);
-			newData[setName][dataId]=trackData;
+			originals[setName][dataId] = angular.copy(trackData);
+			newData[setName][dataId] = trackData;
 			return true;
 		}
 	}
 	return {
 		//This will override original data.
-		registerTracking:function(setName, dataId, trackData, trackScope) {
-			if (setName !==undefined && dataId !==undefined && trackData !==undefined) {
+		registerTracking: function (setName, dataId, trackData, trackScope) {
+			if (setName !== undefined && dataId !== undefined && trackData !== undefined) {
 				startTracking(setName, dataId, trackData, trackScope);
-				if (trackScope !==undefined) {
-					if (trackedScopes[setName]===undefined) {
-						trackedScopes[setName]={};
+				if (trackScope !== undefined) {
+					if (trackedScopes[setName] === undefined) {
+						trackedScopes[setName] = {};
 					}
-					trackedScopes[setName][dataId]=trackScope;
+					trackedScopes[setName][dataId] = trackScope;
 				}
 			}
 		},
-		commitTracking:function(setName, dataId) {
-			if (setName===undefined) {
-				originals={};
-				changeSets={};
+		commitTracking: function (setName, dataId) {
+			if (setName === undefined) {
+				originals = {};
+				changeSets = {};
 			}
 			else {
-				if (newData[setName]!==undefined) {
-					if (dataId!==undefined && newData[setName][dataId]!==undefined) {
-						originals[setName][dataId]=angular.copy(newData[setName][dataId]);
-						if (trackedScopes[setName]!==undefined && trackedScopes[setName][dataId]!==undefined) {
-							if (typeof trackedScopes[setName][dataId].DeChangeReset==='function') {
+				if (newData[setName] !== undefined) {
+					if (dataId !== undefined && newData[setName][dataId] !== undefined) {
+						originals[setName][dataId] = angular.copy(newData[setName][dataId]);
+						if (trackedScopes[setName] !== undefined && trackedScopes[setName][dataId] !== undefined) {
+							if (typeof trackedScopes[setName][dataId].DeChangeReset === 'function') {
 								trackedScopes[setName][dataId].DeChangeReset();
 							};
 						}
 					}
 					else {
-						originals[setName]=angular.copy(newData[setName]);
-						if (trackedScopes[setName]!==undefined) {
+						originals[setName] = angular.copy(newData[setName]);
+						if (trackedScopes[setName] !== undefined) {
 							for (var k in trackedScopes[setName]) {
-								if (typeof trackedScopes[setName][k].DeChangeReset==='function') {
+								if (typeof trackedScopes[setName][k].DeChangeReset === 'function') {
 									trackedScopes[setName][k].DeChangeReset();
 								};
 							}
 						}
 					}
 				}
-				if (changeSets[setName]!==undefined && dataId!==undefined) {
+				if (changeSets[setName] !== undefined && dataId !== undefined) {
 					delete changeSets[setName][dataId];
 				}
 			}
 		},
-		resetTracking:startTracking,
+		resetTracking: startTracking,
 		//Return true if there're changes, false if none.
-		trackChanges:function(setName, dataId, compareData) {
-			if (originals[setName] !==undefined && originals[setName][dataId]!==undefined) {
-				var changes=DeHelper.getDiff(originals[setName][dataId],compareData,true);
+		trackChanges: function (setName, dataId, compareData) {
+			if (originals[setName] !== undefined && originals[setName][dataId] !== undefined) {
+				var changes = DeHelper.getDiff(originals[setName][dataId], compareData, true);
 				if (!DeHelper.isEmpty(changes.changed) || !DeHelper.isEmpty(changes.removed)) {
-				//if (!angular.equals(originals[setName][dataId], compareData)) {
-					if (changeSets[setName]===undefined) {
-						changeSets[setName]={};
+					//if (!angular.equals(originals[setName][dataId], compareData)) {
+					if (changeSets[setName] === undefined) {
+						changeSets[setName] = {};
 					}
-					changeSets[setName][dataId]=changes;
+					changeSets[setName][dataId] = changes;
 					return true;
 				}
 				else {
-					if (changeSets[setName]!==undefined) {
+					if (changeSets[setName] !== undefined) {
 						delete changeSets[setName][dataId];
 					}
 					return false;
 				}
 			}
 		},
-		getChanges:function(setName, dataId) {
-			if (setName!==undefined) {
-				if (changeSets[setName]!==undefined) {
-					if (dataId===undefined || changeSets[setName][dataId]===undefined) {
+		getChanges: function (setName, dataId) {
+			if (setName !== undefined) {
+				if (changeSets[setName] !== undefined) {
+					if (dataId === undefined || changeSets[setName][dataId] === undefined) {
 						return changeSets[setName];
 					}
 					else {
@@ -1306,9 +1833,9 @@ de.factory('DeChangeRegister', function(DeHelper) {
 				return null;
 			}
 		},
-		getOriginals:function(setName, dataId) {
-			if (setName !==undefined && originals[setName]!==undefined) {
-				if (dataId!==undefined && originals[setName][dataId]!==undefined) {
+		getOriginals: function (setName, dataId) {
+			if (setName !== undefined && originals[setName] !== undefined) {
+				if (dataId !== undefined && originals[setName][dataId] !== undefined) {
 					return originals[setName][dataId];
 				}
 				else {
@@ -1319,37 +1846,37 @@ de.factory('DeChangeRegister', function(DeHelper) {
 				return originals;
 			}
 		},
-		hasChanged:function(setName, dataId) {
-			var itHas=true;
-			if (setName!==undefined) {
-				if (changeSet[setName]===undefined) {
-					itHas=false;
+		hasChanged: function (setName, dataId) {
+			var itHas = true;
+			if (setName !== undefined) {
+				if (changeSet[setName] === undefined) {
+					itHas = false;
 				}
-				else if (dataId!==undefined) {
-					if (changeSet[setName][dataId]===undefined) {
-						itHas=false;
+				else if (dataId !== undefined) {
+					if (changeSet[setName][dataId] === undefined) {
+						itHas = false;
 					}
 				}
 			}
 			else {
-				itHas=false;
+				itHas = false;
 			}
 			return itHas;
 		}
 	}
 });
 //v0.3.7 - TODO: Revisit how "reset is used";
-de.directive('deTrackChanges', function(DeChangeRegister) {
+de.directive('deTrackChanges', function (DeChangeRegister) {
 	return {
 		scope: {
-			trackModel:"=deTrackChanges",
-			trackName:"=deTrackName",
-			trackId:"=?deTrackId"
+			trackModel: "=deTrackChanges",
+			trackName: "=deTrackName",
+			trackId: "=?deTrackId"
 		},
-		link:function(scope, elem, attrs) {
-			var trackId=(scope.trackId===undefined) ? scope.$id : scope.trackId;
+		link: function (scope, elem, attrs) {
+			var trackId = (scope.trackId === undefined) ? scope.$id : scope.trackId;
 			DeChangeRegister.registerTracking(scope.trackName, trackId, scope.trackModel, scope);
-			scope.$watch('trackModel', function(newVal, oldVal) {
+			scope.$watch('trackModel', function (newVal, oldVal) {
 				if (DeChangeRegister.trackChanges(scope.trackName, trackId, newVal)) {
 					elem.addClass("data-changed");
 				}
@@ -1357,37 +1884,37 @@ de.directive('deTrackChanges', function(DeChangeRegister) {
 					elem.removeClass("data-changed");
 				}
 			}, true);
-			scope.DeChangeReset=function() {
+			scope.DeChangeReset = function () {
 				elem.removeClass("data-changed");
 			}
 		}
 	}
 });
 //v0.3.9 - Tags
-de.directive('deTagInput', function() {
+de.directive('deTagInput', function () {
 	return {
 		scope: {
-			tags:'=ngModel',
-			delimiter:'=?deTagDelimiter',
-			maxLength:'=?deTagMax'
+			tags: '=ngModel',
+			delimiter: '=?deTagDelimiter',
+			maxLength: '=?deTagMax'
 		},
-		link:function(scope,elem,attrs) {
-			scope.maxSize=scope.maxLength===undefined?5:intVal(scope.maxLength);
-			var delimit=scope.delimiter===undefined?",":scope.delimiter;
-			scope.$watch('tagText', function(newVal, oldVal) {
-				if (newVal!==undefined &&newVal[newVal.length-1]==delimit) {
-					if (scope.tags==undefined) {
-						scope.tags=[];
+		link: function (scope, elem, attrs) {
+			scope.maxSize = scope.maxLength === undefined ? 5 : intVal(scope.maxLength);
+			var delimit = scope.delimiter === undefined ? "," : scope.delimiter;
+			scope.$watch('tagText', function (newVal, oldVal) {
+				if (newVal !== undefined && newVal[newVal.length - 1] == delimit) {
+					if (scope.tags == undefined) {
+						scope.tags = [];
 					}
-					var insertVal=oldVal.trim().replace(" ", "-");
-					if (scope.tags.indexOf(insertVal)<0 && scope.tags.length<scope.maxSize) {
+					var insertVal = oldVal.trim().replace(" ", "-");
+					if (scope.tags.indexOf(insertVal) < 0 && scope.tags.length < scope.maxSize) {
 						scope.tags.push(insertVal);
 					}
-					scope.tagText="";
+					scope.tagText = "";
 				}
 			});
-			scope.canAddTags=function() {
-				if (scope.tags===undefined) {
+			scope.canAddTags = function () {
+				if (scope.tags === undefined) {
 					return true;
 				}
 				else if (scope.tags.length < scope.maxSize) {
@@ -1397,43 +1924,43 @@ de.directive('deTagInput', function() {
 					return false;
 				}
 			}
-			scope.deleteTag=function(index) {
+			scope.deleteTag = function (index) {
 				scope.tags.splice(index, 1);
 			}
 		},
-		template:'<div class="tags-container">'+
-							'<div class="tags" ng-repeat="tag in tags">'+
-							'<span type="tag-text" ng-bind="tag"></span>'+
-							'<button class="tags-delete material-icons" ng-click="deleteTag($index)">close</button>'+
-							'</div>'+
-							'<div class="tags-input">'+
-							'<input class="tag-text" ng-model="tagText" ng-show="canAddTags()" placeholder="new tag">'+
-							'<span class="tags-message" ng-hide="canAddTags()" ng-cloak>Max. tags ({{maxSize}}) reached!</span>'+
-							'</div>'+
-							'</div>'
+		template: '<div class="tags-container">' +
+			'<div class="tags" ng-repeat="tag in tags">' +
+			'<span type="tag-text" ng-bind="tag"></span>' +
+			'<button class="tags-delete material-icons" ng-click="deleteTag($index)">close</button>' +
+			'</div>' +
+			'<div class="tags-input">' +
+			'<input class="tag-text" ng-model="tagText" ng-show="canAddTags()" placeholder="new tag">' +
+			'<span class="tags-message" ng-hide="canAddTags()" ng-cloak>Max. tags ({{maxSize}}) reached!</span>' +
+			'</div>' +
+			'</div>'
 	}
 });
 //FILTERS
-de.filter('validity', function() {
-	return function(valString) {
+de.filter('validity', function () {
+	return function (valString) {
 		if (isNaN(valString.charAt(0))) {
-			valString=valString.replace("M", "1 month");
-			valString=valString.replace("D", "1 day");
-			valString=valString.replace("Y", "1 year");
+			valString = valString.replace("M", "1 month");
+			valString = valString.replace("D", "1 day");
+			valString = valString.replace("Y", "1 year");
 		}
 		else {
-			valString=valString.replace("M", " months");
-			valString=valString.replace("D", " days");
-			valString=valString.replace("Y", " years");
+			valString = valString.replace("M", " months");
+			valString = valString.replace("D", " days");
+			valString = valString.replace("Y", " years");
 		}
 		return valString;
 	}
 });
-de.filter('filterId', function() {
-	return function(deObj, objId, field) {
+de.filter('filterId', function () {
+	return function (deObj, objId, field) {
 		for (var i in deObj) {
-			if (deObj[i].id==objId) {
-				if (field===undefined) {
+			if (deObj[i].id == objId) {
+				if (field === undefined) {
 					return deObj[i];
 				}
 				else {
@@ -1442,5 +1969,52 @@ de.filter('filterId', function() {
 			}
 		}
 		return "";
+	}
+});
+//v5.0
+de.filter('starratings', function () {
+	return function (ratingText) {
+		var oneStar = '<span class="fa fa-star"></span>';
+		var halfStar = '<span class="fa fa-star-half-empty"></span>';
+
+		switch (ratingText) {
+			case "NA":
+			case -1:
+				return '<div class="rating">Not Available</div>';
+			case "1":
+			case "1.0":
+			case 1:
+				return '<div class="rating">' + oneStar + '</div>';
+			case "1.5":
+			case 1.5:
+				return '<div class="rating">' + oneStar + halfStar + '</div>';
+			case "2":
+			case "2.0":
+			case 2:
+				return '<div class="rating">' + oneStar + oneStar + '</div>';
+			case "2.5":
+			case 2.5:
+				return '<div class="rating">' + oneStar + oneStar + halfStar + '</div>';
+			case "3":
+			case "3.0":
+			case 3:
+				return '<div class="rating">' + oneStar + oneStar + oneStar + '</div>';
+			case "3.5":
+			case 3.5:
+				return '<div class="rating">' + oneStar + oneStar + oneStar + halfStar + '</div>';
+			case "4":
+			case "4.0":
+			case 4:
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + '</div>';
+			case "4.5":
+			case 4.5:
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + halfStar + '</div>';
+			case "5":
+			case "5.0":
+			case 5:
+				return '<div class="rating">' + oneStar + oneStar + oneStar + oneStar + oneStar + '</div>';
+			default:
+				return "";
+		}
 	}
 });

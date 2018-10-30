@@ -138,3 +138,34 @@ div.page-loader.ng-hide {
     text-shadow:1px 1px black;
     bottom:10px;
 }
+/** v0.5**/
+.de-button {
+    background: transparent;
+    border: 1px solid #c5c5c5;
+    padding: 10px 15px;
+    text-align: center;
+}
+.searchinput-type {
+    position: absolute;
+    top: 0;
+    display: flex;
+    bottom: 0;
+    flex-direction: row;
+    align-items: center;
+    right: 10px;
+    color: rgba(0,0,0,0.3);
+    font-size: 0.8em;
+}
+.keyword-search:hover {
+    cursor: pointer;
+}
+.searchinput-dropdown .keyword-search h4 {
+    padding: 8px 5px 8px 15px;
+    display:inline-block;
+    width:auto;
+    margin-bottom: 0px;
+}
+.search-term {
+    padding: 2px 15px 8px 5px;
+    color: rgba(0,0,0,0.4);
+}
