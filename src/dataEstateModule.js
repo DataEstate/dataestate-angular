@@ -1,4 +1,4 @@
-//Version 0.5.2 searchBar modes, updated "GET" to not decode keyword quotes twice. 
+//Version 0.5.3 searchBar modes, updated "GET" to not decode keyword quotes twice. 
 var de = angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.5);
@@ -52,7 +52,6 @@ de.provider('DeApi', function () {
 					params.keyword = decodeURI(params.keyword);
 				}
 				httpReq.params = params;
-				//console.log(httpReq.params);
 				return $http(httpReq);
 			}
 		}
@@ -183,11 +182,11 @@ de.factory('DeAssets', function (DeApi) {
 			var endpoints = "/assets/data/" + id;
 			return DeApi.get(endpoints, params);
 		},
-		articles: function(estate, slug, params = {}) {
-			if (slug==undefined) {
-				slug="";
+		articles: function (estate, slug, params = {}) {
+			if (slug == undefined) {
+				slug = "";
 			}
-			var endpoints="/assets/articles/" + estate + "/" + slug;
+			var endpoints = "/assets/articles/" + estate + "/" + slug;
 			return DeApi.get(endpoints, params);
 		},
 		// v0.1.3
@@ -886,10 +885,10 @@ de.factory('DeHelper', function () {
 		},
 		getQueryParameter: function (str) {
 			var locationSearch = document.location.search.replace(/(^\?)/, '');
-			if (locationSearch=="") {
+			if (locationSearch == "") {
 				return {};
 			}
-			var queryDoc = locationSearch.split("&").map(function (n) {	return n = n.split("="),this[n[0]] = n[1], this }.bind({}))[0];
+			var queryDoc = locationSearch.split("&").map(function (n) { return n = n.split("="), this[n[0]] = n[1], this }.bind({}))[0];
 			if (str === undefined) {
 				return queryDoc;
 			}
@@ -1240,7 +1239,8 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 			locationLabel: "@?locationLabelAlias",
 			estateLabel: "@?estateLabelAlias",
 			keywordLabel: "@?keywordLabelAlias",
-			estateUrl: "@?estateUrl"
+			estateUrl: "@?estateUrl",
+			showState: "=?"
 		},
 		transclude: true,
 		controller: ["$scope", "$element", function DeSearchController($scope, $element) {
@@ -1251,11 +1251,17 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				vm.searchText = "";
 				vm.searchEstateOptions = [];
 				vm.searchLocationOptions = [];
+
+				vm.searchRegion = false;
 				vm.searchLocality = false;
 				vm.searchState = false;
+
 				$scope.popupOpen = false;
 				$scope.showLocationSearch = false;
 				$scope.showEstateSearch = false;
+
+				$scope.showState = $scope.showState === undefined ? true : $scope.showState;
+
 				var searchEstatePromise = false;
 				var searchLocationPromise = false;
 				//Set defaults
@@ -1288,6 +1294,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 
 					vm.searchText = "";
 					vm.searchLocality = false;
+					vm.searchRegion = false;
 					vm.searchState = false;
 					return;
 				}
@@ -1327,12 +1334,13 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 			}
 			function doLocationSearch() {
 				$scope.searchControl.searchLocality = false;
+				$scope.searchControl.searchRegion = false;
 				$scope.searchControl.searchState = false;
 				//Setup search locations. 
 				searchLocationPromise = DeLocations.data({
 					name: vm.searchText,
 					fields: 'id,name,state_code,type',
-					types: 'LOCALITY,STATE'
+					types: 'LOCALITY,REGION,STATE'
 				}, 'data').then(function (response) {
 					searchLocationPromise = false; //cleanup
 					vm.searchLocationOptions = [];
@@ -1341,32 +1349,54 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 						if (!('state_code' in response.data[i])) { continue; }
 						if (response.data[i].type == "STATE") {
 							vm.searchLocationOptions.push({
-								label: response.data[i].name + ' (' + response.data[i].state_code + ')',
-								state_code: response.data[i].state_code
+								label: response.data[i].name,
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
+							});
+						}
+						else if (response.data[i].type == "REGION") {
+							vm.searchLocationOptions.push({
+								label: response.data[i].name + ' (Region), ' + response.data[i].state_code,
+								region: response.data[i].name,
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
 							});
 						}
 						else {
 							vm.searchLocationOptions.push({
 								label: response.data[i].name + ', ' + response.data[i].state_code,
 								locality: response.data[i].name,
-								state_code: response.data[i].state_code
+								state_code: response.data[i].state_code,
+								type: response.data[i].type
 							});
 						}
-
 						j++;
 					}
 					$scope.showLocationSearch = true;
 				}, function (error) { console.log(error) });
 			}
 			vm.searchLocationClicked = function (location) {
-				$scope.searchControl.searchText = location.label; //Updates the child search bar. 
+				if ($scope.showState != false) {
+					$scope.searchControl.searchText = location.label; //Updates the child search bar. 
+					vm.searchText = location.label;
+				}
+				else if (location.type == "REGION") {
+					$scope.searchControl.searchText = location.region;
+					vm.searchText = location.region;
+				}
+				else {
+					$scope.searchControl.searchText = location.locality;
+					vm.searchText = location.locality;
+				}
 				$scope.searchControl.searchLocality = location.locality;
 				$scope.searchControl.searchState = location.state_code;
+				$scope.searchControl.searchRegion = location.region;
 				$scope.searchControl.searchUpdated();
-				//console.log("Search location updated" + $scope.searchControl.searchLocality);
-				vm.searchText = location.label;
+
 				vm.searchLocality = location.locality;
 				vm.searchState = location.state_code;
+				vm.searchRegion = location.region;
+
 				vm.searchType = vm.locationLabel.toLowerCase();
 				$scope.showEstateSearch = false;
 				$scope.showLocationSearch = false;
@@ -1374,9 +1404,11 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 			vm.searchKeywordClicked = function () {
 				$scope.searchControl.searchLocality = false;
 				$scope.searchControl.searchState = false;
+				$scope.searchControl.searchRegion = false;
 				$scope.searchControl.searchUpdated();
 				vm.searchLocality = false;
 				vm.searchState = false;
+				vm.searchRegion = false;
 				vm.searchType = vm.keywordLabel.toLowerCase();
 				$scope.showEstateSearch = false;
 				$scope.showLocationSearch = false;
@@ -1397,9 +1429,9 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 							var searchScope = {
 								"keyword": ev.currentScope.searchControl.searchText,
 								"locality": ev.currentScope.searchControl.searchLocality,
+								"region": ev.currentScope.searchControl.searchRegion,
 								"state_code": ev.currentScope.searchControl.searchState
 							};
-							console.log(searchScope);
 							ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
 						}
 					}
@@ -1412,9 +1444,9 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 								var searchScope = {
 									"keyword": ev.currentScope.searchControl.searchText,
 									"locality": ev.currentScope.searchControl.searchLocality,
+									"region": ev.currentScope.searchControl.searchRegion,
 									"state_code": ev.currentScope.searchControl.searchState
 								};
-								//console.log(ev.currentScope);
 								ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
 							}
 						}
@@ -1473,6 +1505,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 						scope.onClear({
 							"$searchScope": {
 								"keyword": "",
+								"region": false,
 								"locality": false,
 								"state_code": false
 							}
@@ -1483,6 +1516,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 					if (scope.onSubmit !== undefined) {
 						var searchScope = {
 							"keyword": scope.searchText,
+							"region": scope.searchRegion,
 							"locality": scope.searchLocality,
 							"state_code": scope.searchState
 						};
@@ -1608,7 +1642,13 @@ de.directive('deDropdown', function ($rootScope) {
 						}
 					}
 					else {
-						scope.labelModel = labelItem;
+						if (scope.labelField !== undefined) {
+							scope.labelModel = optionVal[scope.labelField];
+						}
+						else {
+							scope.labelModel = labelItem;
+						}
+
 					}
 				}
 				if (!scope.multiple) {
