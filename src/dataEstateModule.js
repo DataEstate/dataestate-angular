@@ -1343,6 +1343,21 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 					types: 'LOCALITY,REGION,STATE'
 				}, 'data').then(function (response) {
 					searchLocationPromise = false; //cleanup
+
+					//prioritise results exactly matching the query, then starting with the query, then containing the query anywhere else
+					var compareSearch = response.config.params.name.toLowerCase();
+					response.data.forEach(function (row) {
+						var compareResult = row.name.toLowerCase();
+						if (compareResult == compareSearch) {
+							row.priority = 1;
+						} else if (compareResult.substring(0, compareSearch.length) == compareSearch) {
+							row.priority = 2;
+						} else {
+							row.priority = 3;
+						}
+					});
+					response.data.sort((a, b) => (a.priority > b.priority) ? 1 : ((b.priority > a.priority) ? -1 : 0));
+
 					vm.searchLocationOptions = [];
 					var j = 0;
 					for (var i = 0; i < response.data.length && j < 5; i++) {
