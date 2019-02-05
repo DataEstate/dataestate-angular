@@ -1,4 +1,4 @@
-//Version 0.5.3 searchBar modes, updated "GET" to not decode keyword quotes twice. 
+//Version 0.5.5 added support for Signups endpoint
 var de = angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.5);
@@ -659,6 +659,40 @@ de.factory('DeMultimedia', function (DeApi, $http) {
 			//TODO: Use Promise
 			return multimedia;
 		}
+	}
+});
+// v0.5.5: Signups
+de.factory('DeSignups', function(DeApi) {
+	return {
+		data: function(id, params = {}) {
+			if (id==undefined) {
+				id="";
+			}
+			var endpoint="/signups/data/"+id;
+			return DeApi.get(endpoint, params);
+		},
+		update: function(id, data) {
+			var endpoint="/signups/data/"+id;
+			return DeApi.put(endpoint, data);
+		},
+		create: function(data) {
+			var endpoint="/signups/data/";
+			return DeApi.post(endpoint, data);
+		},
+		commit: function(id) {
+			var endpoint="/signups/commit/";
+			var data={
+				"id":id
+			}
+			return DeApi.post(endpoint, data);
+		},
+		checkEmail: function(address) {
+			var endpoint="/signups/email/";
+			var data={
+				"email":address
+			};
+			return DeApi.get(endpoint, data);
+		}		
 	}
 });
 // v0.1.2: HELPER
