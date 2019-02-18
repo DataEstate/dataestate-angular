@@ -468,7 +468,8 @@ de.factory('DeTaxonomy', function (DeApi) {
 		{ id: "in", name: "Instagram" }, { id: "fb", name: "Facebook" }, { id: "li", name: "LinkedIn" }, { id: "tw", name: "Twitter" }, { id: "yt", name: "YouTube" }
 	];
 	return {
-		subtypes: function () {
+		subtypes: function (category) {
+			var endpoints = "/taxonomy/data/"+category;
 			return subtypes;
 		},
 		locations: function () {
