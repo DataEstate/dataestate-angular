@@ -470,7 +470,7 @@ de.factory('DeTaxonomy', function (DeApi) {
 	return {
 		subtypes: function (category) {
 			var endpoints = "/taxonomy/data/"+category;
-			return subtypes;
+			return DeApi.get(endpoints, {});
 		},
 		locations: function () {
 			return locations;
