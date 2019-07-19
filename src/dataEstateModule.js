@@ -455,6 +455,7 @@ de.factory('DeTaxonomy', function (DeApi) {
 		"COMPANY": "Company",
 		"DESTINFO": "Destination Information",
 		"EVENT": "Event",
+		"GENSERVICE": "General Services",
 		"GROUP": "Group",
 		"HIRE": "Hire",
 		"INFO": "Information Services",
