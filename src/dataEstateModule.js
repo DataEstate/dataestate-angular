@@ -1,4 +1,4 @@
-//Version 0.5.5 added support for Signups endpoint
+//Version 0.5.8 added support for Signups endpoint
 var de = angular.module("dataEstateModule", []);
 //CONSTANTS
 de.constant('VERSION', 0.5);
@@ -470,7 +470,7 @@ de.factory('DeTaxonomy', function (DeApi) {
 	];
 	return {
 		subtypes: function (category) {
-			var endpoints = "/taxonomy/data/"+category;
+			var endpoints = "/taxonomy/data/" + category;
 			return DeApi.get(endpoints, {});
 		},
 		locations: function () {
@@ -664,37 +664,37 @@ de.factory('DeMultimedia', function (DeApi, $http) {
 	}
 });
 // v0.5.5: Signups
-de.factory('DeSignups', function(DeApi) {
+de.factory('DeSignups', function (DeApi) {
 	return {
-		data: function(id, params = {}) {
-			if (id==undefined) {
-				id="";
+		data: function (id, params = {}) {
+			if (id == undefined) {
+				id = "";
 			}
-			var endpoint="/signups/data/"+id;
+			var endpoint = "/signups/data/" + id;
 			return DeApi.get(endpoint, params);
 		},
-		update: function(id, data) {
-			var endpoint="/signups/data/"+id;
+		update: function (id, data) {
+			var endpoint = "/signups/data/" + id;
 			return DeApi.put(endpoint, data);
 		},
-		create: function(data) {
-			var endpoint="/signups/data/";
+		create: function (data) {
+			var endpoint = "/signups/data/";
 			return DeApi.post(endpoint, data);
 		},
-		commit: function(id) {
-			var endpoint="/signups/commit/";
-			var data={
-				"id":id
+		commit: function (id) {
+			var endpoint = "/signups/commit/";
+			var data = {
+				"id": id
 			}
 			return DeApi.post(endpoint, data);
 		},
-		checkEmail: function(address) {
-			var endpoint="/signups/email/";
-			var data={
-				"email":address
+		checkEmail: function (address) {
+			var endpoint = "/signups/email/";
+			var data = {
+				"email": address
 			};
 			return DeApi.get(endpoint, data);
-		}		
+		}
 	}
 });
 // v0.1.2: HELPER
@@ -1273,6 +1273,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 	return {
 		scope: {
 			locationLabel: "@?locationLabelAlias",
+			searchInState: "@?searchInState",
 			estateLabel: "@?estateLabelAlias",
 			keywordLabel: "@?keywordLabelAlias",
 			estateUrl: "@?estateUrl",
@@ -1293,6 +1294,7 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				vm.searchState = false;
 
 				$scope.popupOpen = false;
+				$scope.showKeywordSearch = true;
 				$scope.showLocationSearch = false;
 				$scope.showEstateSearch = false;
 
@@ -1344,6 +1346,10 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				if (vm.searchModes.length <= 0 || vm.searchModes.includes("ESTATE")) {
 					doEstateSearch();
 				}
+				if (vm.searchModes.length > 0 && !vm.searchModes.includes("KEYWORD")) {
+					$scope.showKeywordSearch = false;
+					vm.searchType = "";
+				}
 				//TODO: Search modes. 
 			}
 			function doEstateSearch() {
@@ -1373,13 +1379,17 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				$scope.searchControl.searchRegion = false;
 				$scope.searchControl.searchState = false;
 				//Setup search locations. 
-				searchLocationPromise = DeLocations.data({
+				var locationSearchParams = {
 					name: vm.searchText,
 					fields: 'id,name,state_code,type',
 					types: 'LOCALITY,REGION,STATE'
-				}, 'data').then(function (response) {
+				};
+				if ($scope.searchInState !== undefined) {
+					locationSearchParams.states = $scope.searchInState;
+				}
+				searchLocationPromise = DeLocations.data(locationSearchParams, 'data').then(function (response) {
 					searchLocationPromise = false; //cleanup
-
+					console.log(response);
 					//prioritise results exactly matching the query, then starting with the query, then containing the query anywhere else
 					var compareSearch = response.config.params.name.toLowerCase();
 					response.data.forEach(function (row) {
@@ -1498,6 +1508,10 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 									"region": ev.currentScope.searchControl.searchRegion,
 									"state_code": ev.currentScope.searchControl.searchState
 								};
+								var searchModes = ev.currentScope.searchControl.searchModes ? ev.currentScope.searchControl.searchModes.split("|") : [];
+								if (searchModes.length > 0 && !searchModes.includes("KEYWORD")) {
+									delete searchScope.keyword;
+								}
 								ev.currentScope.searchControl.onClose({ "$searchScope": searchScope });
 							}
 						}
@@ -1505,9 +1519,9 @@ de.directive('deSearch', function (DeEstates, DeAssets, DeLocations, $rootScope)
 				}
 			});
 		},
-		template: '<div ng-transclude></div><span class="searchinput-type">{{sc.searchType}}</span>' +
+		template: '<div ng-transclude></div>' +
 			'<div class="searchinput-dropdown" ng-show="popupOpen">' +
-			'<div class="keyword-search" ng-click="sc.searchKeywordClicked()"><h4>{{sc.keywordLabel}}: </h4><span class="search-term">{{sc.searchText}}</span></div>' +
+			'<div ng-if="showKeywordSearch" class="keyword-search" ng-click="sc.searchKeywordClicked()"><h4>{{sc.keywordLabel}}: </h4><span class="search-term">{{sc.searchText}}</span></div>' +
 			'<div ng-if="showLocationSearch"><h4>{{sc.locationLabel}}</h4>' +
 			'<ul><li ng-repeat="searchOption in sc.searchLocationOptions track by $index" ng-click="sc.searchLocationClicked(searchOption)">' +
 			'<span>{{searchOption.label}}</span>' +

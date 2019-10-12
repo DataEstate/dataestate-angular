@@ -4,7 +4,7 @@
     "src/dataEstateModule-script.js",
     "src/dataEstateModule.js",
     "src/angular-de-gallery.js",
-    "src/css/angular-de-gallery.css",
-    "src/css/dataEstateUI.css"
+    "src/angular-de-gallery.css",
+    "src/dataEstateUI.css"
   ]
 }
