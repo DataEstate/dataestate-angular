@@ -1,9 +1,13 @@
 {
   "name": "dataestate-angular",
-  "version": "0.5.9",
-  "description": "Shared data estate angular package. Now using npm",
-  "main": "index.js", // Update this if there's a main entry file
-  "keywords": ["angular", "carousel", "dataestate"],
+  "version": "0.5.10",
+  "description": "AngularJS library for interacting with Data Estate API",
+  "main": "src/dataestateModule.js",
+  "keywords": [
+    "dataestate",
+    "angular",
+    "rest"
+  ],
   "author": "Rolf Chen",
   "license": "MIT"
 }
