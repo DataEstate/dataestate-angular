@@ -14,6 +14,14 @@ import { IDeLocationsService } from '../services/de-locations.service';
 import { IDeSearchScope } from './de-search.directive.types';
 import DeSearchController from '../controllers/de-search.controller';
 
+/**
+ * Custom built search input container. Requires an <input> with de-search-bar as attribute.
+ * Attributes:
+ * location-label-alias (string) - Title for the location search result. Default is Location
+ * estate-label-alias (string) - Title for the estate search result. Default is Estate
+ * keyword-label-alias (string) - Title for the keyword search result. Default is Keyword
+ * estate-url (string) - The base url to link to the estate detail view.
+ */
 function DeSearchDirective(
   $rootScope: IRootScopeService,
   DeEstates: IDeEstatesService,

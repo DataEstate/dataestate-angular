@@ -10,10 +10,15 @@
   ],
   "author": "Rolf Chen",
   "license": "MIT",
+  "scripts": {
+    "build": "node build.js",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@types/angular": "^1.8.9",
     "@types/jquery": "^3.5.32",
     "@types/jqueryui": "^1.12.23",
+    "esbuild": "^0.24.0",
     "typescript": "^5.6.3"
   },
   "dependencies": {
