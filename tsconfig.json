@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    /* Basic Options */
+    "target": "ES5", // Target ECMAScript version
+    "module": "commonjs", // Module code generation
+    "outDir": "./dist", // Output directory for compiled JS files
+    "rootDir": "./src", // Root directory of input files
+    "allowJs": true, // Allow compiling .js files
+    "checkJs": false, // Report errors in .js files
+    "sourceMap": true, // Generates corresponding .map files
+    "noImplicitAny": false, // Warn on expressions and declarations with an implied 'any' type
+    "strictNullChecks": false, // Enable strict null checks
+    "removeComments": true, // Remove comments from output
+    "noEmitOnError": true, // Do not emit outputs if any errors were reported
+    "experimentalDecorators": true, // Enable experimental support for decorators
+    "lib": ["ES2016", "DOM"], // Specify library files to be included
+    "types": ["angular"],
+    "typeRoots": ["./node_modules/@types"], // List of folders to include type definitions from
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "*": ["node_modules/*"]
+    },
+    /* Advanced Options */
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

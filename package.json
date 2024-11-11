@@ -9,5 +9,14 @@
     "rest"
   ],
   "author": "Rolf Chen",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/angular": "^1.8.9",
+    "@types/jquery": "^3.5.32",
+    "@types/jqueryui": "^1.12.23",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "angular": "^1.8.3"
+  }
 }
