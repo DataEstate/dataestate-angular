@@ -4,7 +4,7 @@
     "forceConsistentCasingInFileNames": true,
     /* Basic Options */
     "target": "ES2016", // Target ECMAScript version
-    "module": "commonjs", // Module code generation
+    "module": "ESNext", // Module code generation
     "outDir": "./dist", // Output directory for compiled JS files
     "rootDir": "./src", // Root directory of input files
     "allowJs": true, // Allow compiling .js files
@@ -19,6 +19,7 @@
     "types": ["angular"],
     "typeRoots": ["./node_modules/@types"], // List of folders to include type definitions from
     /* Module Resolution Options */
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {

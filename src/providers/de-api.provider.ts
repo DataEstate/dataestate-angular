@@ -16,10 +16,15 @@ export interface IDeApiService {
   getToken(): string;
   getApiUrl(): string;
   getHeaders(): any;
+  getIsV3SyntaxEnabled(): boolean;
 }
 
 class DeApiProvider implements IServiceProvider {
   private apiUrl: string = 'https://api.dataestate.net/v2'; // Default
+  /**
+   * Whether the new API v3 response style is enabled.
+   */
+  private isV3SyntaxEnabled = false;
   private apiKey: string = '';
   private authType: 'api-key' | 'token' | 'none' = 'api-key'; // Default v0.1.4
   private oauthData: { token?: string } = {};
@@ -38,6 +43,9 @@ class DeApiProvider implements IServiceProvider {
     this.oauthData.token = auth_token;
   }
 
+  setisV3SyntaxEnabled(enbaleV3Syntax: boolean): void {
+    this.isV3SyntaxEnabled = enbaleV3Syntax;
+  }
   // v0.4.9: added "none" for proxies
   setAuthType(auth_type: 'api-key' | 'token' | 'none'): void {
     const allowedTypes = ['token', 'api-key', 'none'];
@@ -158,6 +166,9 @@ class DeApiProvider implements IServiceProvider {
         },
         getHeaders: (): any => {
           return this.getHeaders();
+        },
+        getIsV3SyntaxEnabled: (): boolean => {
+          return this.isV3SyntaxEnabled;
         },
       };
 

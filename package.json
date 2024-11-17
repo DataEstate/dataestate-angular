@@ -1,8 +1,8 @@
 {
-  "name": "dataestate-angular",
-  "version": "1.0.3",
-  "description": "AngularJS library for interacting with Data Estate API",
-  "main": "src/dataestateModule.js",
+  "name": "@dataestate/angular-js-module",
+  "version": "1.1.0",
+  "description": "AngularJS library for interacting with Data Estate API.",
+  "main": "dist/dataEstateModule.min.js",
   "keywords": [
     "dataestate",
     "angular",
@@ -11,17 +11,25 @@
   "author": "Rolf Chen",
   "license": "MIT",
   "scripts": {
-    "build": "node build.js",
+    "build": "webpack",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/angular": "^1.8.9",
     "@types/jquery": "^3.5.32",
     "@types/jqueryui": "^1.12.23",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.6.3"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
   },
-  "peerDependencies": {
+  "dependencies": {
     "angular": "^1.8.3"
-  }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
 }

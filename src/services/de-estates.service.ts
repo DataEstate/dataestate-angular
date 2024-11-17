@@ -1,6 +1,7 @@
 // src/services/de-estates.service.ts
 import { IHttpPromise } from 'angular';
 import { IDeApiService } from '../providers/de-api.provider';
+import { handleApiResponse } from '../utils/handleApiResponse';
 
 export interface IDeEstatesService {
   data(params?: any, id?: string): IHttpPromise<any>;
@@ -20,10 +21,14 @@ class DeEstatesService implements IDeEstatesService {
 
   constructor(private DeApi: IDeApiService) {}
 
+  /**
+   * This is the default GET request
+   */
   data(params?: any, id?: string): IHttpPromise<any> {
     const endpointId = id || '';
     const endpoints = `/estates/data/${endpointId}`;
-    return this.DeApi.get(endpoints, params);
+    const response = this.DeApi.get(endpoints, params);
+    return handleApiResponse(response, this.DeApi.getIsV3SyntaxEnabled());
   }
 
   update(
