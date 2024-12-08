@@ -28,6 +28,9 @@ class DeEstatesService implements IDeEstatesService {
     const endpointId = id || '';
     const endpoints = `/estates/data/${endpointId}`;
     const response = this.DeApi.get(endpoints, params);
+    if (id && id !== '') {
+      return response;
+    }
     return handleApiResponse(response, this.DeApi.getIsV3SyntaxEnabled());
   }
 

@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2016",
+    "module": "ESNext",
+    "outDir": "./demo",
+    "rootDir": ".",
+    "allowJs": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "noEmitOnError": false,
+    "experimentalDecorators": true,
+    "lib": ["ES2016", "DOM"],
+    "types": ["angular"],
+    "typeRoots": ["./node_modules/@types"],
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "baseUrl": "./"
+  },
+  "include": ["demo/**/*", "src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

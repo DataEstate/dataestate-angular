@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html ng-app="demoApp">
 	<head>
-		<link rel="stylesheet" type="text/css" href="../src/css/angular-de-gallery.css">
-		<script type="text/javascript" src="../bower_components/angular/angular.js"></script>
-		<script type="text/javascript" src="../src/dataEstateModule.js"></script>
-		<script type="text/javascript" src="../src/angular-de-gallery.js"></script>
-		<script type="text/javascript" src="demoApp.js"></script>
+
 	</head>
-	<body ng-controller="demoController as dc">
-		<button type="button" de-gallery-model="dc.image" de-gallery-trigger>Add Image</button>
-		<img ng-src="{{dc.image.sizes.medium.path}}" ng-attr-alt="{{dc.image.alt}}">
-		<de-gallery de-gallery-id="DE"></de-gallery>
+	<body ng-controller="DemoController as dc">
+		<h1>{{ dc.title }}</h1>
+		<ul>
+			<li ng-repeat="listing in dc.listings">
+				{{listing}}
+			</li>
+		</ul>
+		<script src="main.js"></script>
 	</body>
 </html>

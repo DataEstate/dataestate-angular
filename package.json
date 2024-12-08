@@ -1,6 +1,6 @@
 {
   "name": "@dataestate/angular-js-module",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "AngularJS library for interacting with Data Estate API.",
   "main": "dist/dataEstateModule.min.js",
   "keywords": [
@@ -13,7 +13,8 @@
   "scripts": {
     "build": "webpack",
     "prepublishOnly": "npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo": "webpack serve --open --config webpack.config.demo.js"
   },
   "devDependencies": {
     "@types/angular": "^1.8.9",
@@ -22,7 +23,8 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.3",
     "webpack": "^5.96.1",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0"
   },
   "dependencies": {
     "angular": "^1.8.3"

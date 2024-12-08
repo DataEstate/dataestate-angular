@@ -21,6 +21,7 @@ import DeChangeRegisterFactory from './factories/de-change-register.factory';
 import DeTagInputDirective from './directives/de-tag-input.directive';
 import ValidityFilter from './filters/validity.filter';
 import FilterIdFilter from './filters/filter-id.filter';
+import DeDropdownDirective from './directives/de-dropdown.directive';
 
 const dataEstateModule = angular.module('dataEstateModule', []);
 
@@ -44,6 +45,7 @@ dataEstateModule
   .directive('deSearchBar', DeSearchBarDirective)
   .factory('DeChangeRegister', DeChangeRegisterFactory)
   .directive('deTagInput', DeTagInputDirective)
+  .directive('deDropdown', DeDropdownDirective)
   .filter('validity', ValidityFilter)
   .filter('filterId', FilterIdFilter)
   .filter('starratings', StarRatingsFilter);

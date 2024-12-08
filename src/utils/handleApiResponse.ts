@@ -14,7 +14,7 @@ export const handleApiResponse = (
   if (isV3SyntaxEnabled) {
     return response.then((res: IHttpResponse<any>) => {
       // Extract the meta information
-      const meta = res.data.meta || {};
+      const meta = res?.data?.meta || {};
 
       // Create a custom headers function that matches the expected signature
       const headers: angular.IHttpHeadersGetter = (

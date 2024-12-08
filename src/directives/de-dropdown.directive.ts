@@ -90,6 +90,7 @@ function DeDropdownDirective(
       };
 
       scope.$on(winClickEventConstant, (ev: IAngularEvent, data: any) => {
+        console.log('Clicked');
         if (data) {
           if (data.$id !== scope.$id && scope.popupOpen) {
             scope.popupOpen = false;

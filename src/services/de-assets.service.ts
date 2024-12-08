@@ -1,5 +1,6 @@
 import { IHttpPromise } from 'angular';
 import { IDeApiService } from '../providers/de-api.provider';
+import { handleApiResponse } from '../utils/handleApiResponse';
 
 export interface IDeAssetsService {
   setEstate(estate: string): void;
@@ -34,9 +35,14 @@ class DeAssetsService implements IDeAssetsService {
     return this.currentEstate;
   }
 
-  data(params?: any, id: string = ''): IHttpPromise<any> {
-    const endpoints = `/assets/data/${id}`;
-    return this.DeApi.get(endpoints, params);
+  data(params?: any, id?: string): IHttpPromise<any> {
+    const endpointId = id || '';
+    const endpoints = `/assets/data/${endpointId}`;
+    const response = this.DeApi.get(endpoints, params);
+    if (id && id !== '') {
+      return response;
+    }
+    return handleApiResponse(response, this.DeApi.getIsV3SyntaxEnabled());
   }
 
   articles(

@@ -43,7 +43,7 @@ class DeApiProvider implements IServiceProvider {
     this.oauthData.token = auth_token;
   }
 
-  setisV3SyntaxEnabled(enbaleV3Syntax: boolean): void {
+  setIsV3SyntaxEnabled(enbaleV3Syntax: boolean): void {
     this.isV3SyntaxEnabled = enbaleV3Syntax;
   }
   // v0.4.9: added "none" for proxies
