@@ -1,5 +1,6 @@
 import { IHttpPromise } from 'angular';
 import { IDeApiService } from '../providers/de-api.provider';
+import { handleApiResponse } from '../utils/handleApiResponse';
 
 export interface ISubtype {
   type: string;
@@ -217,7 +218,9 @@ class DeTaxonomyService implements IDeTaxonomyService {
 
   subtypes(category: string): IHttpPromise<any> {
     const endpoint = `/taxonomy/data/${category}`;
-    return this.DeApi.get(endpoint, {});
+    const response = this.DeApi.get(endpoint, {});
+
+    return response;
   }
 
   locations(): ILocation[] {
@@ -230,7 +233,8 @@ class DeTaxonomyService implements IDeTaxonomyService {
 
   accreditations(): IHttpPromise<any> {
     const endpoint = '/taxonomy/data/ACCREDITN';
-    return this.DeApi.get(endpoint, {});
+    const response = this.DeApi.get(endpoint, {});
+    return handleApiResponse(response, this.DeApi.getIsV3SyntaxEnabled());
   }
 
   social(): ISocialPlatform[] {
@@ -239,7 +243,8 @@ class DeTaxonomyService implements IDeTaxonomyService {
 
   data(params?: any, id: string = ''): IHttpPromise<any> {
     const endpoint = `/taxonomy/data/${id}`;
-    return this.DeApi.get(endpoint, params);
+    const response = this.DeApi.get(endpoint, params);
+    return handleApiResponse(response, this.DeApi.getIsV3SyntaxEnabled());
   }
 
   update(

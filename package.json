@@ -1,6 +1,6 @@
 {
   "name": "@dataestate/angular-js-module",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "AngularJS library for interacting with Data Estate API.",
   "main": "dist/dataEstateModule.min.js",
   "keywords": [
