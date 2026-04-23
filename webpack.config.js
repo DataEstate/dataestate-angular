@@ -3,9 +3,12 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/dataEstateModule.ts',
+  entry: {
+    dataEstateModule: './src/dataEstateModule.ts',
+    'dataEstateModule.full': './src/dataEstateModule.full.ts',
+  },
   output: {
-    filename: 'dataEstateModule.min.js',
+    filename: '[name].min.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'dataEstateModule',
     libraryTarget: 'var',

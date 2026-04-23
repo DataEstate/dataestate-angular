@@ -23,6 +23,8 @@ import ValidityFilter from './filters/validity.filter';
 import FilterIdFilter from './filters/filter-id.filter';
 import DeDropdownDirective from './directives/de-dropdown.directive';
 
+declare const require: (path: string) => unknown;
+
 const dataEstateModule = angular.module('dataEstateModule', []);
 
 dataEstateModule
